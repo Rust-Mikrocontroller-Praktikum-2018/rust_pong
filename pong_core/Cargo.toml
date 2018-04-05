@@ -1,5 +1,5 @@
 [package]
-name = "pong_lib"
+name = "pong_core"
 version = "0.1.0"
 authors = ["Tim Joseph <tim.joseph@mctigger.com>"]
 
