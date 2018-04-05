@@ -2,8 +2,8 @@ use core::ops::Add;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Vector {
-    pub x: f32,
-    pub y: f32,
+    pub x: i32,
+    pub y: i32,
 }
 
 impl Add for Vector {

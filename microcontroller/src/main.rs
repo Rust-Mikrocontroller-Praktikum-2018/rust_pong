@@ -10,7 +10,7 @@
 extern crate stm32f7_discovery as stm32f7;
 
 #[macro_use]
-extern create pong_core;
+extern crate pong_core;
 
 // initialization routines for .data and .bss
 #[macro_use]
@@ -52,7 +52,6 @@ pub unsafe extern "C" fn reset() -> ! {
 // WORKAROUND: rust compiler will inline & reorder fp instructions into
 #[inline(never)] //             reset() before the FPU is initialized
 fn main(hw: board::Hardware) -> ! {
-    use core::fmt::Write;
     use embedded::interfaces::gpio::{Gpio};
 
     let board::Hardware {
@@ -130,24 +129,24 @@ fn main(hw: board::Hardware) -> ! {
     let threshold = 10;
     let mut last_render_time = system_clock::ticks();
 
-    let game = pong::Game::new(); 
+    let mut game = pong::Game::new(); 
 
     loop {
         let ticks = system_clock::ticks();
-        let t_delta = ticks - last_render_time;
+        let t_delta: i32 = (ticks - last_render_time) as i32;
        
         if t_delta < threshold {
             continue;
         }
-        let mut new_player_1_pos = 0;
-        let mut new_player_2_pos = 0;
+        let mut new_player_1_pos: i32 = 0;
+        let mut new_player_2_pos: i32 = 0;
 
         // poll for new touch data to update positions
         for touch in &touch::touches(&mut i2c_3).unwrap() {
             if (touch.x as usize) < 480 / 2 {
-                new_player_1_pos = touch.y as usize; 
+                new_player_1_pos = touch.y as i32; 
             } else {
-                new_player_2_pos = touch.y as usize;
+                new_player_2_pos = touch.y as i32;
             }
         }
 
@@ -157,8 +156,7 @@ fn main(hw: board::Hardware) -> ! {
             t_delta
         );
 
-        renderer.render(game.get_state());
-        current_state = new_state;
+       // renderer.render(game.state);
         last_render_time = ticks;
     }
 }
