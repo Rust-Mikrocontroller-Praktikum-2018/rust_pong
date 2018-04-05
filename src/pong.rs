@@ -1,6 +1,14 @@
-use ball::Ball;
-use paddle::Paddle;
+use math::Vector;
 use constants::{LCD_WIDTH, LCD_HEIGHT, PADDLE_OFFSET, PADDLE_HEIGHT};
+
+pub struct Ball {
+    position: Vector,
+    direction: Vector,
+}
+
+pub struct Paddle {
+    position: Vector
+}
 
 pub struct GameMode {
     NEW_GAME,
