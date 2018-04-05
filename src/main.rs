@@ -15,7 +15,7 @@ extern crate stm32f7_discovery as stm32f7;
 extern crate compiler_builtins;
 extern crate r0;
 
-// game relates structs
+// game related structs
 use pong;
 
 // hardware register structs with accessor methods
@@ -133,8 +133,10 @@ fn main(hw: board::Hardware) -> ! {
     loop {
         let ticks = system_clock::ticks();
         let t_delta = ticks - last_render_time;
-        if t_delta < threshold {continue;}
-
+       
+        if t_delta < threshold {
+            continue;
+        }
         let mut new_player_1_pos = 0;
         let mut new_player_2_pos = 0;
 
@@ -154,7 +156,7 @@ fn main(hw: board::Hardware) -> ! {
         );
 
         renderer.render(game.get_state());
-        current_state = new_state;*/
+        current_state = new_state;
         last_render_time = ticks;
     }
 }
