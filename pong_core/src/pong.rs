@@ -1,5 +1,5 @@
 use math::Vector;
-use constants::{LCD_WIDTH, LCD_HEIGHT, PADDLE_OFFSET, PADDLE_HEIGHT};
+use constants::{LCD_WIDTH, LCD_HEIGHT, PADDLE_OFFSET, PADDLE_HEIGHT, PADDLE_SPEED};
 
 pub struct Ball {
     position: Vector,
@@ -10,7 +10,7 @@ pub struct Paddle {
     position: Vector
 }
 
-pub struct GameMode {
+pub enum GameMode {
     NEW_GAME,
     RUNNUNG,
     GAME_OVER,
@@ -31,13 +31,21 @@ pub struct Game {
 
 impl Game {
     fn new() -> Game {
+        let ball = Ball{
+            position: Vector{x: LCD_WIDTH/2, y: LCD_HEIGHT/2},
+            direction: Vector{x: 0.5, y: 0.5}
+        };
+
+        let paddle_1 = Paddle{position: Vector{x: PADDLE_OFFSET, y: LCD_HEIGHT/2}};
+        let paddle_2 = Paddle{position: Vector{x: LCD_WIDTH - PADDLE_OFFSET, y: LCD_HEIGHT/2}};
+
         Game {
-            Ball{x: LCD_WIDTH/2, y: LCD_HEIGHT/2},
-            Paddle{x: PADDLE_OFFSET, y: LCD_HEIGHT/2},
-            Paddle{x: LCD_WIDTH - PADDLE_OFFSET, y: LCD_HEIGHT/2}, 
-            0,
-            0,
-            GameMode::NEW_GAME
+            ball: ball,
+            paddle_1: paddle_1,
+            paddle_2: paddle_2,
+            score_1: 0,
+            score_2: 0,
+            running: GameMode::NEW_GAME
         }
     }
 
@@ -46,12 +54,11 @@ impl Game {
     }
 
     fn update_state(player_1_input: usize, player_2_input: usize, t_delta: usize) {
-        use std::cmp::min;
-        let distance = t_delta * Paddle::SPEED;
+        use core::cmp::min;
+        let distance = t_delta * PADDLE_SPEED;
 
         let diff_1 = (player_1_input - paddle_1.y);
         let diff_2 = (player_2_input - paddle_2.y);
-
         let path_1 = min(diff_1.abs(), distance) * diff_1.signum();
         let path_2 = min(diff_2.abs(), distance) * diff_2.signum();
 

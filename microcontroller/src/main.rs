@@ -9,14 +9,16 @@
 #[macro_use]
 extern crate stm32f7_discovery as stm32f7;
 
-// initialization routines for .data and .bss
+#[macro_use]
+extern create pong_core;
 
+// initialization routines for .data and .bss
 #[macro_use]
 extern crate compiler_builtins;
 extern crate r0;
 
 // game related structs
-use pong;
+use pong_core::{pong};
 
 // hardware register structs with accessor methods
 use stm32f7::{board, embedded, lcd, sdram, system_clock, touch, i2c};

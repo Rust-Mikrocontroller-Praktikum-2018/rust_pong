@@ -1,9 +1,9 @@
-use std::ops::Add;
+use core::ops::Add;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Vector {
-    pub x: u32,
-    pub y: u32
+    pub x: f32,
+    pub y: f32,
 }
 
 impl Add for Vector {
