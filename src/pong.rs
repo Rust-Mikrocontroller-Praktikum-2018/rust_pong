@@ -1,3 +1,7 @@
+use ball::Ball;
+use paddle::Paddle;
+use constants::{LCD_WIDTH, LCD_HEIGHT, PADDLE_OFFSET, PADDLE_HEIGHT};
+
 pub struct GameMode {
     NEW_GAME,
     RUNNUNG,
@@ -18,10 +22,6 @@ pub struct Game {
 }
 
 impl Game {
-    const LCD_HEIGHT: usize = 272;
-    const LCD_WIDTH: usize = 480;
-    const PADDLE_OFFSET: usize = 50;
-
     fn new() -> Game {
         Game {
             Ball{x: LCD_WIDTH/2, y: LCD_HEIGHT/2},
@@ -49,6 +49,5 @@ impl Game {
 
         paddle_1.y += path_1;
         paddle_2.y += path_2;
-
-        
     }
+}

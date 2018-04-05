@@ -1,4 +1,4 @@
-
 pub struct Ball {
-    pos: Vector
+    position: Vector,
+    direction: Vector,
 }
