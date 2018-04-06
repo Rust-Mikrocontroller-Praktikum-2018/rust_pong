@@ -12,7 +12,7 @@ struct Circle {
     diameter: i32,
 }
 
-struct Rectangle{
+struct Rectangle {
     curr: CurrentCoordiante,
     length_x: i32,
     length_y: i32,
