@@ -1,4 +1,6 @@
 use math::Vector;
+use core::cmp::{min, max};
+
 use constants::{LCD_WIDTH, LCD_HEIGHT, PADDLE_OFFSET, PADDLE_HEIGHT, PADDLE_SPEED};
 
 pub struct Ball {
@@ -12,9 +14,9 @@ pub struct Paddle {
 }
 
 pub enum GameMode {
-    NEW_GAME,
-    RUNNUNG,
-    GAME_OVER,
+    NewGame,
+    Running,
+    GameOver,
 } 
 
 pub struct GameState {
@@ -48,13 +50,17 @@ impl Game {
                 paddle_2: paddle_2,
                 score_1: 0,
                 score_2: 0,
-                running: GameMode::NEW_GAME
+                running: GameMode::NewGame
             }
         }
     }
 
+    pub fn normalize_paddle(paddle: &mut Paddle) {
+        paddle.position.y = min(paddle.position.y, LCD_HEIGHT - PADDLE_HEIGHT/2);
+        paddle.position.y = max(paddle.position.y, PADDLE_HEIGHT/2);
+    }
+
     pub fn update_state(&mut self, player_1_input: i32, player_2_input: i32, t_delta: i32) {
-        use core::cmp::min;
         let distance = t_delta * PADDLE_SPEED;
 
         let paddle_1 = &mut self.state.paddle_1;
@@ -67,5 +73,8 @@ impl Game {
 
         paddle_1.position.y += path_1;
         paddle_2.position.y += path_2;
+
+        Game::normalize_paddle(paddle_1);
+        Game::normalize_paddle(paddle_2);
     }
 }

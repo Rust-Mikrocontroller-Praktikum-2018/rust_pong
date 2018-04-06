@@ -6,14 +6,11 @@
 #![no_std]
 #![no_main]
 
-#[macro_use]
 extern crate stm32f7_discovery as stm32f7;
 
-#[macro_use]
 extern crate pong_core;
 
 // initialization routines for .data and .bss
-#[macro_use]
 extern crate compiler_builtins;
 extern crate r0;
 
