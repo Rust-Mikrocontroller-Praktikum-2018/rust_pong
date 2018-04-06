@@ -5,6 +5,6 @@ pub enum Direction {
 }
 
 pub trait Controller {
-    fn start() -> bool;
-    fn get_direction() -> Direction;
+    fn start(&self) -> bool;
+    fn get_direction(&self) -> Direction;
 }

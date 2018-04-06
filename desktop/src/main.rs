@@ -6,6 +6,7 @@ extern crate itertools;
 extern crate pong_core;
 
 mod display;
+mod controller;
 
 use minifb::{Key, WindowOptions, Window};
 use rand::{Rng, thread_rng};
