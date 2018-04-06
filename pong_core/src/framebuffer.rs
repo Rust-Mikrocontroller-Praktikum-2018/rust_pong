@@ -8,10 +8,16 @@ pub struct FrameBuffer {
 
 impl FrameBuffer {
     pub fn new(width: usize, height: usize) -> Self {
+        let mut buffer = Vec::with_capacity(width*height);
+
+        for i in 0..width*height {
+            buffer.push(0);
+        }
+
         FrameBuffer {
             width,
             height,
-            buffer: Vec::with_capacity(width*height)
+            buffer: buffer
         }
     }
 
