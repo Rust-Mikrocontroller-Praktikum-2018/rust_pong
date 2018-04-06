@@ -1,6 +1,14 @@
 extern crate alloc;
+use math::Vector;
 use alloc::LinkedList;
+use pong_core::framebuffer::FrameBuffer;
 
+fn draw_state (state: &GameState) {
+    drawcircle(&state.ball.position);
+    drawrectangle(&state.paddle_1.position); 
+    drawrectangle(&state.paddle_2.position);
+    drawscore(&state.score1,&state.score2);
+}
 
 struct CurrentCoordiante {
     x: i32,
@@ -23,7 +31,7 @@ struct Point {
     y: i32,
 }
 
-fn drawrectangle ( rect: &Rectangle) {
+fn drawrectangle ( rect: &rect) {
     draw(calculate_pixels_rectangle( rect ));
 }
 
@@ -35,11 +43,14 @@ fn drawcircle( circ: &Circle){
 
 
 fn calculate_pixels_rectangle(rect: &Rectangle) -> LinkedList<Point> {
+    
+    let length_y = 15;
+    let length_x = 8;
 
-    let  leftedgeup =    Point{x : rect.curr.x - (rect.length_x/2), y : rect.curr.y + (rect.length_y/2)};
-    let  leftedgedown =  Point{x : rect.curr.x - (rect.length_x/2), y : rect.curr.y - (rect.length_x/2)};
-    let  rightedgeup =   Point{x : rect.curr.x + (rect.length_x/2), y : rect.curr.y + (rect.length_y/2)};
-    let  rightedgedown = Point{x : rect.curr.x + (rect.length_x/2), y : rect.curr.y - (rect.length_y/2)};
+    let  leftedgeup =    Point{x : position.x - (length_x/2), y : position.y + (length_y/2)};
+    let  leftedgedown =  Point{x : position.x - (length_x/2), y : position.y - (length_x/2)};
+    let  rightedgeup =   Point{x : position.x + (length_x/2), y : position.y + (length_y/2)};
+    let  rightedgedown = Point{x : position.x + (length_x/2), y : position.y - (length_y/2)};
 
     let mut list: LinkedList<Point> = LinkedList::new();
     
@@ -89,8 +100,9 @@ fn quadrat (value: i32) -> i32 {
 }
 
 
+
 fn draw (points: LinkedList<Point>) {
-    
+     
     for element in points
     {
         //layer.print_point_color_at(element.x,element.y,farbe);
