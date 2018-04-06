@@ -1,5 +1,6 @@
 #![no_std]
 #![feature(alloc)]
+#![feature(inclusive_range_syntax)]
 
 extern crate alloc;
 
