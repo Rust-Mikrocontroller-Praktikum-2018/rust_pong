@@ -1,47 +1,73 @@
-extern crate alloc;
 use math::Vector;
 use alloc::LinkedList;
-use pong_core::framebuffer::FrameBuffer;
+use framebuffer::FrameBuffer;
+use pong::GameState;
 
-fn draw_state (state: &GameState) {
-    drawcircle(&state.ball.position);
-    drawrectangle(&state.paddle_1.position); 
-    drawrectangle(&state.paddle_2.position);
-    drawscore(&state.score1,&state.score2);
+/*
+trait Drawable {
+    fn draw(&self) -> LinkedList<Point>;
 }
 
-struct CurrentCoordiante {
-    x: i32,
-    y: i32,
+fn draw_state(state: &GameState, frame_buffer: &mut FrameBuffer) {
+    let mut objects: LinkedList<&Drawable> = LinkedList::new();
+
+    objects.push_back(&Circle {
+        position: state.ball.position,
+        diameter: 5
+    });
+
+    let mut points: LinkedList<&Point> = LinkedList::new();
+    for o in objects {
+        points.append(&mut o.draw());
+    }
+
+    for p in points {
+        frame_buffer.set_pixel(0xffffff, p.x, p.y);
+    }
 }
+
 
 struct Circle {
-    curr: CurrentCoordiante,
-    diameter: i32,
+    position: Vector<usize>,
+    diameter: usize,
+}
+
+impl Drawable for Circle {
+    fn draw(&self) -> LinkedList<Point> {
+        let mut list: LinkedList<Point> = LinkedList::new();
+
+        let radius = self.diameter/2;
+        for i in self.position.x-radius..self.position.x+radius {
+            //TODO sqrt()
+            let mut pointbuttom = Point { x: i , y : (radius**2 - quadrat(self.position.x))};
+
+            let mut pointsover = Point {x:i,y:-pointbuttom.y};
+            list.push_back(pointbuttom);
+            list.push_back(pointsover);
+        }
+
+        list
+    }
 }
 
 struct Rectangle {
-    curr: CurrentCoordiante,
-    length_x: i32,
-    length_y: i32,
+    curr: Vector<usize>,
+    size: Vector<usize>,
 }
+
+
 
 struct Point {
-    x: i32,
-    y: i32,
-}
-
-fn drawrectangle ( rect: &rect) {
-    draw(calculate_pixels_rectangle( rect ));
+    x: usize,
+    y: usize,
 }
 
 
-fn drawcircle( circ: &Circle){
-     draw(calculate_pixels_circle( circ ));
+fn quadrat (value: i32) -> i32 {
+    value*value
 }
 
-
-
+/*
 fn calculate_pixels_rectangle(rect: &Rectangle) -> LinkedList<Point> {
     
     let length_y = 15;
@@ -95,9 +121,6 @@ fn calculate_pixels_circle (circ: &Circle) -> LinkedList<Point> {
     list
 }
 
-fn quadrat (value: i32) -> i32 {
-    value*value
-}
 
 
 
@@ -108,3 +131,5 @@ fn draw (points: LinkedList<Point>) {
         //layer.print_point_color_at(element.x,element.y,farbe);
     }
 }
+*/
+*/
