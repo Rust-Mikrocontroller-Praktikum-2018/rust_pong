@@ -12,6 +12,7 @@ use rand::{Rng, thread_rng};
 
 use pong_core::framebuffer::FrameBuffer;
 use pong_core::display::Display;
+use pong_core::controller::Controller;
 use display::DefaultDisplay;
 
 fn main() {

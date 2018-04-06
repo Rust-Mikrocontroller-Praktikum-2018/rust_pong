@@ -1,10 +1,10 @@
-enum Direction {
+pub enum Direction {
     Up,
     Down,
     None
 }
 
-trait Controller {
+pub trait Controller {
     fn start() -> bool;
     fn get_direction() -> Direction;
 }
