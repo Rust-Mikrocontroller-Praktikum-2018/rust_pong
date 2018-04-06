@@ -11,34 +11,43 @@ mod controller;
 use minifb::{Key, WindowOptions, Window};
 use rand::{Rng, thread_rng};
 
+use pong_core::pong::Game;
 use pong_core::framebuffer::FrameBuffer;
 use pong_core::display::Display;
-use pong_core::controller::Controller;
+use pong_core::controller::{Controller, Direction};
 use display::DefaultDisplay;
+use controller::DefaultController;
 
 fn main() {
     println!("Hello, world!");
 
     let mut frame_buffer = FrameBuffer::new(640, 360);
     let mut display = DefaultDisplay::new("Game", 640, 360);
+    let mut game = Game::new();
 
-    let mut rng = thread_rng();
+    let controller_a = DefaultController::new(display.window.clone(), Key::Up, Key::Down);
+    let controller_b = DefaultController::new(display.window.clone(), Key::W, Key::S);
 
-    while display.window.is_open() && !display.window.is_key_down(Key::Escape) {
-        let mut v: u32 = rng.gen();
+    while display.window.borrow().is_open() && !display.window.borrow().is_key_down(Key::Escape) {
+        let dir = controller_a.get_direction();
 
-        for (y, x) in iproduct!((0..360), (0..640)) {
-            if (y*360+x) % 50000 == 0 {
-                v = rng.gen();
-            }
+        let string = match dir {
+            Direction::None => "a:None",
+            Direction::Up => "a:Up",
+            Direction::Down => "a:Down",
+        };
 
-            frame_buffer.set_pixel(v, x, y);
-            if display.window.is_key_down(Key::Up) {
-                frame_buffer.set_pixel(0, x, y);
-            }
-        }
+        println!("{}", string);
 
+        let dir = controller_b.get_direction();
 
+        let string = match dir {
+            Direction::None => "b:None",
+            Direction::Up => "b:Up",
+            Direction::Down => "b:Down",
+        };
+
+        println!("{}", string);
 
         display.show(&frame_buffer);
 

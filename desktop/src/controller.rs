@@ -1,15 +1,22 @@
+use std::rc::Rc;
+use std::cell::RefCell;
+
 use minifb::{Key, WindowOptions, Window};
 
 use pong_core::controller::{Controller, Direction};
 
 pub struct DefaultController {
-    window: Window
+    up_key: Key,
+    down_key: Key,
+    window: Rc<RefCell<Window>>
 }
 
 impl DefaultController {
-    fn new(window: Window) -> Self {
+    pub fn new(window: Rc<RefCell<Window>>, up_key: Key, down_key: Key) -> Self {
         DefaultController {
-            window
+            window,
+            up_key,
+            down_key
         }
     }
 }
@@ -17,15 +24,15 @@ impl DefaultController {
 
 impl Controller for DefaultController {
     fn start(&self) -> bool {
-        self.window.is_key_down(Key::Enter)
+        self.window.borrow().is_key_down(Key::Enter)
     }
 
     fn get_direction(&self) -> Direction {
-        if self.window.is_key_down(Key::Up) {
+        if self.window.borrow().is_key_down(self.up_key) {
             return Direction::Up;
         }
 
-        if self.window.is_key_down(Key::Down) {
+        if self.window.borrow().is_key_down(self.down_key) {
             return Direction::Down;
         }
 
