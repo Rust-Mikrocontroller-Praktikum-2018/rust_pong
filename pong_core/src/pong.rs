@@ -1,49 +1,58 @@
 use math::Vector;
 use core::cmp::{min, max};
+use core::fmt::Debug;
 
-use constants::{LCD_WIDTH, LCD_HEIGHT, PADDLE_OFFSET, PADDLE_HEIGHT, PADDLE_SPEED};
+use constants::{PADDLE_OFFSET, PADDLE_HEIGHT, PADDLE_SPEED};
 
+#[derive(Debug)
 pub struct Ball {
     pub position: Vector<i32>,
     pub direction_x: f32,
     pub direction_y: f32,
 }
 
+#[derive(Debug)]
 pub struct Paddle {
     pub position: Vector<i32>
 }
 
+#[derive(Debug)]
 pub enum GameMode {
     NewGame,
     Running,
     GameOver,
 } 
 
+#[derive(Debug)]
 pub struct GameState {
-    ball: Ball,
-    paddle_1: Paddle,
-    paddle_2: Paddle,
-    score_1: usize,
-    score_2: usize,
-    running: GameMode,
+    pub ball: Ball,
+    pub paddle_1: Paddle,
+    pub paddle_2: Paddle,
+    pub score_1: usize,
+    pub score_2: usize,
+    pub running: GameMode,
 }
 
 pub struct Game {
-    pub state: GameState
+    pub state: GameState,
+    pub width: i32,
+    pub height: i32,
 }
 
 impl Game {
-    pub fn new() -> Game {
+    pub fn new(width: i32, height: i32) -> Game {
         let ball = Ball{
-            position: Vector{x: LCD_WIDTH/2, y: LCD_HEIGHT/2},
+            position: Vector{x: width/2, y: height/2},
             direction_x: 0.5,
             direction_y: 0.5,
         };
 
-        let paddle_1 = Paddle{position: Vector{x: PADDLE_OFFSET, y: LCD_HEIGHT/2}};
-        let paddle_2 = Paddle{position: Vector{x: LCD_WIDTH - PADDLE_OFFSET, y: LCD_HEIGHT/2}};
+        let paddle_1 = Paddle{position: Vector{x: PADDLE_OFFSET, y: height/2}};
+        let paddle_2 = Paddle{position: Vector{x: width - PADDLE_OFFSET, y: height/2}};
 
         Game {
+            width,
+            height,
             state: GameState{
                 ball: ball,
                 paddle_1: paddle_1,
@@ -55,8 +64,8 @@ impl Game {
         }
     }
 
-    pub fn normalize_paddle(paddle: &mut Paddle) {
-        paddle.position.y = min(paddle.position.y, LCD_HEIGHT - PADDLE_HEIGHT/2);
+    pub fn normalize_paddle(paddle: &mut Paddle, height: i32) {
+        paddle.position.y = min(paddle.position.y, height - PADDLE_HEIGHT/2);
         paddle.position.y = max(paddle.position.y, PADDLE_HEIGHT/2);
     }
 
@@ -74,7 +83,7 @@ impl Game {
         paddle_1.position.y += path_1;
         paddle_2.position.y += path_2;
 
-        Game::normalize_paddle(paddle_1);
-        Game::normalize_paddle(paddle_2);
+        Game::normalize_paddle(paddle_1, self.height);
+        Game::normalize_paddle(paddle_2, self.height);
     }
 }

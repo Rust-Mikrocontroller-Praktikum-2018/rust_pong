@@ -3,63 +3,110 @@ use alloc::LinkedList;
 use framebuffer::FrameBuffer;
 use pong::GameState;
 
-/*
+trait Renderer {
+    fn render(&self, framebuffer: FrameBuffer) -> FrameBuffer {
+        framebuffer
+    }
+}
+
 trait Drawable {
     fn draw(&self) -> LinkedList<Point>;
 }
 
-fn draw_state(state: &GameState, frame_buffer: &mut FrameBuffer) {
+pub fn draw_state(state: &GameState, frame_buffer: &mut FrameBuffer) {
+
+    let a = Circle {
+        position: state.ball.position,
+        diameter: 30
+    };
+
     let mut objects: LinkedList<&Drawable> = LinkedList::new();
 
-    objects.push_back(&Circle {
-        position: state.ball.position,
-        diameter: 5
-    });
+    objects.push_back(&a);
 
-    let mut points: LinkedList<&Point> = LinkedList::new();
+    let mut points: LinkedList<Point> = LinkedList::new();
     for o in objects {
         points.append(&mut o.draw());
     }
 
     for p in points {
-        frame_buffer.set_pixel(0xffffff, p.x, p.y);
+        if p.x > 0 && p.y > 0 {
+            frame_buffer.set_pixel(0xffffff, p.x as usize, p.y as usize);
+        }
     }
 }
 
 
 struct Circle {
-    position: Vector<usize>,
-    diameter: usize,
+    position: Vector<i32>,
+    diameter: i32,
 }
 
 impl Drawable for Circle {
     fn draw(&self) -> LinkedList<Point> {
         let mut list: LinkedList<Point> = LinkedList::new();
-
         let radius = self.diameter/2;
-        for i in self.position.x-radius..self.position.x+radius {
-            //TODO sqrt()
-            let mut pointbuttom = Point { x: i , y : (radius**2 - quadrat(self.position.x))};
 
-            let mut pointsover = Point {x:i,y:-pointbuttom.y};
-            list.push_back(pointbuttom);
-            list.push_back(pointsover);
+        let mut x = radius - 1;
+        let mut y = 0;
+        let mut dx = 1;
+        let mut dy = 1;
+        let mut err = dx - self.diameter;
+        let mut x0 = self.position.x;
+        let mut y0 = self.position.y;
+
+        while x >= y {
+            list.push_back(Point {
+                x: x0 + x, y: y0 + y
+            });
+            list.push_back(Point {
+                x: x0 + y, y: y0 + x
+            });
+            list.push_back(Point {
+                x: x0 -y, y: y0 + x
+            });
+            list.push_back(Point {
+                x: x0 -x, y: y0 + y
+            });
+            list.push_back(Point {
+                x: x0 -x, y: y0 - y
+            });
+            list.push_back(Point {
+                x: x0 -y, y: y0 - x
+            });
+            list.push_back(Point {
+                x: x0 + y, y: y0 - x
+            });
+            list.push_back(Point {
+                x: x0 + x, y: y0 - y
+            });
+
+            if err <= 0 {
+                y = y + 1;
+                err = err + dy;
+                dy += 2;
+            }
+
+            if err > 0 {
+                x = x - 1;
+                dx += 2;
+                err += dx - self.diameter;
+            }
         }
-
         list
     }
 }
 
 struct Rectangle {
-    curr: Vector<usize>,
-    size: Vector<usize>,
+    curr: Vector<i32>,
+    size: Vector<i32>,
 }
 
 
 
 struct Point {
-    x: usize,
-    y: usize,
+    x: i32,
+    y: i32,
 }
 
 
@@ -131,5 +178,4 @@ fn draw (points: LinkedList<Point>) {
         //layer.print_point_color_at(element.x,element.y,farbe);
     }
 }
-*/
 */
