@@ -4,13 +4,13 @@ use core::cmp::{min, max};
 use constants::{LCD_WIDTH, LCD_HEIGHT, PADDLE_OFFSET, PADDLE_HEIGHT, PADDLE_SPEED};
 
 pub struct Ball {
-    pub position: Vector,
+    pub position: Vector<i32>,
     pub direction_x: f32,
     pub direction_y: f32,
 }
 
 pub struct Paddle {
-    pub position: Vector
+    pub position: Vector<i32>
 }
 
 pub enum GameMode {

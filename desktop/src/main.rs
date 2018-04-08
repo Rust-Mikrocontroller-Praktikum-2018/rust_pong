@@ -23,10 +23,11 @@ fn main() {
 
     let mut frame_buffer = FrameBuffer::new(640, 360);
     let mut display = DefaultDisplay::new("Game", 640, 360);
-    let mut game = Game::new();
 
     let controller_a = DefaultController::new(display.window.clone(), Key::Up, Key::Down);
     let controller_b = DefaultController::new(display.window.clone(), Key::W, Key::S);
+
+    let mut game = Game::new();
 
     while display.window.borrow().is_open() && !display.window.borrow().is_key_down(Key::Escape) {
         let dir = controller_a.get_direction();

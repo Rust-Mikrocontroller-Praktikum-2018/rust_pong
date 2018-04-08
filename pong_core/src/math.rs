@@ -1,18 +1,18 @@
 use core::ops::Add;
 
 #[derive(Debug, Copy, Clone)]
-pub struct Vector {
-    pub x: i32,
-    pub y: i32,
+pub struct Vector<T> {
+    pub x: T,
+    pub y: T,
 }
 
-impl Add for Vector {
-    type Output = Vector;
+impl<T> Add for Vector<T> where T:Add {
+    type Output = Vector<T::Output>;
 
-    fn add(self, other: Vector) -> Vector {
-        Vector {
-            x: self.x + other.x,
-            y: self.y + other.y,
+    fn add(self, rhs: Vector<T>) -> Vector<T::Output> {
+        Vector{
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
         }
     }
 }
