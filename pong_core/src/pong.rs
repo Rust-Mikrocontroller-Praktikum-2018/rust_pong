@@ -61,6 +61,23 @@ impl GameState {
         }
     }
 
+    fn reflect(&mut self) {
+        if self.ball.position.x >= LCD_WIDTH - 25.0 {
+            self.ball.direction.x *= -1.0;
+        }
+        if self.ball.position.x <= 0.0 + 25.0 {
+            self.ball.direction.x *= -1.0;
+        }
+        if self.ball.position.y >= LCD_HEIGHT - 25.0 {
+            self.ball.direction.y *= -1.0;
+        }
+        if self.ball.position.y <= 0.0 + 25.0 {
+            self.ball.direction.y *= -1.0;
+        }
+
+
+    }
+
     pub fn update(&mut self, action_1: Direction, action_2: Direction, t_delta: f32) {
         let action_1 = action_1 as i32 as f32;
         let action_2 = action_2 as i32 as f32;
@@ -72,13 +89,19 @@ impl GameState {
         GameState::clip_paddle(&mut self.paddle_1);
         GameState::clip_paddle(&mut self.paddle_2);
 
+        /*
         let new_ball_position = Self::clamp_vector(
             self.ball.position + self.ball.direction,
             Vector {x: 15.0, y: 15.0},
             Vector {x: LCD_WIDTH - 15.0, y: LCD_HEIGHT - 15.0}
         );
 
+        */
+
+        let new_ball_position = self.ball.position + self.ball.direction;
         self.ball.position = new_ball_position;
+
+        self.reflect();
 
         // Problem: Need to update y_pos in controller, but cqannot do it agnostically
     }

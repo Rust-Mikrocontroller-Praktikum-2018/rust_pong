@@ -10,6 +10,7 @@ mod controller;
 
 use minifb::{Key, WindowOptions, Window};
 use rand::{Rng, thread_rng};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use pong_core::pong::GameState;
 use pong_core::framebuffer::FrameBuffer;
@@ -32,6 +33,12 @@ fn main() {
     let mut game_state = GameState::new();
 
     while display.window.borrow().is_open() && !display.window.borrow().is_key_down(Key::Escape) {
+        for i in 0..640 {
+            for j in 0..360 {
+                frame_buffer.set_pixel(0, i, j);
+            }
+        }
+
         let dir_a = controller_a.get_direction();
         let dir_b = controller_b.get_direction();
 
