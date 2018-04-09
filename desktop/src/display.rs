@@ -35,7 +35,6 @@ impl DefaultDisplay {
 
 impl Display for DefaultDisplay {
     fn set_pixel(&mut self, x: usize, y: usize, hex_color: u32) {
-        println!("{}/{}: {}", x, y, hex_color);
         self.frame_buffer.set_pixel(hex_color, x, y);
     }
 }

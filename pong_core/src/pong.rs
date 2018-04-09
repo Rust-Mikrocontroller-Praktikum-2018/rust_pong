@@ -62,20 +62,36 @@ impl GameState {
     }
 
     fn reflect(&mut self) {
-        if self.ball.position.x >= LCD_WIDTH - 25.0 {
-            self.ball.direction.x *= -1.0;
-        }
-        if self.ball.position.x <= 0.0 + 25.0 {
-            self.ball.direction.x *= -1.0;
-        }
         if self.ball.position.y >= LCD_HEIGHT - 25.0 {
             self.ball.direction.y *= -1.0;
         }
         if self.ball.position.y <= 0.0 + 25.0 {
             self.ball.direction.y *= -1.0;
         }
+    }
 
+    fn crash(&mut self) {
+        if self.ball.position.x >= LCD_WIDTH - 25.0 || self.ball.position.x <= 0.0 + 25.0 {
+            self.running = GameMode::GameOver;
+            self.reset();
+        }
+    }
 
+    fn reset(&mut self) {
+        let ball = Ball{
+            position: Vector{x: LCD_WIDTH/2.0, y: LCD_HEIGHT/2.0},
+            direction: Vector {x: 1.0, y: 1.0},
+        };
+
+        let paddle_1 = Paddle { position: Vector { x: PADDLE_OFFSET, y: LCD_HEIGHT / 2.0 } };
+        let paddle_2 = Paddle { position: Vector { x: LCD_WIDTH - PADDLE_OFFSET, y: LCD_HEIGHT / 2.0 } };
+
+        self.ball = ball;
+        self.paddle_1 = paddle_1;
+        self.paddle_2 = paddle_2;
+        self.running = GameMode::NewGame;
+        self.score_1 = 0;
+        self.score_2 = 0;
     }
 
     pub fn update(&mut self, action_1: Direction, action_2: Direction, t_delta: f32) {
@@ -102,6 +118,7 @@ impl GameState {
         self.ball.position = new_ball_position;
 
         self.reflect();
+        self.crash();
 
         // Problem: Need to update y_pos in controller, but cqannot do it agnostically
     }
