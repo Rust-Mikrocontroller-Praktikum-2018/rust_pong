@@ -26,7 +26,7 @@ impl DefaultDisplay {
 }
 
 impl Display for DefaultDisplay {
-    fn show(&mut self, frame_buffer: &FrameBuffer) {
+    fn show(&mut self, frame_buffer: &mut FrameBuffer) {
         let buffer = &frame_buffer.buffer;
         self.window.borrow_mut().update_with_buffer(buffer).unwrap();
     }

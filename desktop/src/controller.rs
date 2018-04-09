@@ -23,11 +23,11 @@ impl DefaultController {
 
 
 impl Controller for DefaultController {
-    fn start(&self) -> bool {
+    fn start(&mut self) -> bool {
         self.window.borrow().is_key_down(Key::Enter)
     }
 
-    fn get_direction(&self) -> Direction {
+    fn get_direction(&mut self) -> Direction {
         if self.window.borrow().is_key_down(self.up_key) {
             return Direction::Up;
         }

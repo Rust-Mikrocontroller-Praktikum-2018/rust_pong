@@ -11,7 +11,7 @@ mod controller;
 use minifb::{Key, WindowOptions, Window};
 use rand::{Rng, thread_rng};
 
-use pong_core::pong::Game;
+use pong_core::pong::GameState;
 use pong_core::framebuffer::FrameBuffer;
 use pong_core::display::Display;
 use pong_core::controller::{Controller, Direction};
@@ -26,10 +26,10 @@ fn main() {
     let renderer = Renderer::new();
     let mut display = DefaultDisplay::new("Game", 640, 360);
 
-    let controller_a = DefaultController::new(display.window.clone(), Key::Up, Key::Down);
-    let controller_b = DefaultController::new(display.window.clone(), Key::W, Key::S);
+    let mut controller_a = DefaultController::new(display.window.clone(), Key::Up, Key::Down);
+    let mut controller_b = DefaultController::new(display.window.clone(), Key::W, Key::S);
 
-    let mut game = Game::new(640, 360);
+    let mut game_state = GameState::new();
 
     while display.window.borrow().is_open() && !display.window.borrow().is_key_down(Key::Escape) {
         let dir = controller_a.get_direction();
@@ -50,12 +50,9 @@ fn main() {
             Direction::Down => "b:Down",
         };
 
-        println!("{}", string);
-        println!("{:?}", game.state);
-        println!("{:?}", frame_buffer.buffer.len());
-
-        renderer.render(&game.state, &mut frame_buffer);
-        display.show(&frame_buffer);
+        game_state.update(Direction::Up, Direction::Down, 1);
+        renderer.render(&game_state, &mut frame_buffer);
+        display.show(&mut frame_buffer);
 
     }
 }
