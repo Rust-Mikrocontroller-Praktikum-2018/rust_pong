@@ -20,9 +20,7 @@ impl Display for DefaultDisplay {
 
         for i in 0..(LCD_HEIGHT as usize) {
             for j in 0..(LCD_WIDTH as usize) {
-                if frame_buffer.get_pixel(j, i) != 0 {
-                    layer_1.print_point_color_at(j, i, Color::rgb(255, 0, 0));
-                }
+                layer_1.print_point_color_at(j, i, Color::from_hex(frame_buffer.get_pixel(j, i)));
             }
         }
     }
