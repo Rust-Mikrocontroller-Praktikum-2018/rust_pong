@@ -144,20 +144,22 @@ impl Drawable for Rectangle {
 
         let leftedgetop = Point { x: self.curr.x - (length_x / 2), y: self.curr.y + (length_y / 2) };
         let rightedgebuttom = Point { x: self.curr.x + (length_x / 2), y: self.curr.y - (length_y / 2) };
-        //let  leftedgebuttom =  Point{x : position.x - (length_x/2), y : position.y - (length_x/2)};
-        //let  rightedgetop =   Point{x : position.x + (length_x/2), y : position.y + (length_y/2)};
+        let  leftedgebuttom =  Point{x : self.curr.x - (length_x/2), y : self.curr.y - (length_y/2)};
+        let  rightedgetop =   Point{x : self.curr.x + (length_x/2), y : self.curr.y + (length_y/2)};
 
         let mut list: LinkedList<Point> = LinkedList::new();
 
+        /*
         for x_coordinate in leftedgetop.x..rightedgebuttom.x {
             for y_coordinate in rightedgebuttom.y..leftedgetop.y{
                 let mut point = Point { x: x_coordinate, y: y_coordinate };
                 list.push_back(point);
             }
         }
+        */
 
         // Code for rectanlge non-solid
-        /*
+
         for i in leftedgetop.x..=rightedgetop.x{
             let mut point = Point { x : i , y : leftedgetop.y};
             list.push_back(point);
@@ -178,7 +180,7 @@ impl Drawable for Rectangle {
             list.push_back(point);
         }
 
-        */
+
     list
     }
 }
