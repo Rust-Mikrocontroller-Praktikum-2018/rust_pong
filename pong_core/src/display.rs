@@ -1,5 +1,5 @@
 use framebuffer::FrameBuffer;
 
 pub trait Display {
-    fn show(&mut self, frame_buffer: &mut FrameBuffer);
+    fn set_pixel(&mut self, x: usize, y: usize, hex_color: u32);
 }

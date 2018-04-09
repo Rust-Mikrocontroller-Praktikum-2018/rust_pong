@@ -27,7 +27,7 @@ use core_display::Display;
 use framebuffer::FrameBuffer;
 
 // hardware register structs with accessor methods
-use stm32f7::{board, embedded, lcd, sdram, system_clock, i2c, interrupts};
+use stm32f7::{board, embedded, lcd, sdram, system_clock, i2c, interrupts, touch};
 use interrupts::primask_mutex::PrimaskMutex;
 
 #[no_mangle]
@@ -131,6 +131,18 @@ fn main(hw: board::Hardware) -> ! {
     i2c_3.test_1();
     i2c_3.test_2();
 
+    let mut game_state = pong::GameState::new(); 
+    let mut display = DefaultDisplay::new(lcd);
+
+    let renderer = Renderer::new();
+    renderer.render(&game_state, &mut display);
+
+    loop {
+
+    }
+
+
+/*
     let mutex = PrimaskMutex::new(i2c_3);
 
     let threshold = 20;
@@ -140,18 +152,35 @@ fn main(hw: board::Hardware) -> ! {
     let mut controller_1 = DefaultController::new(Players::Player1, &mutex);
     let mut controller_2 = DefaultController::new(Players::Player2, &mutex);
 
-    let mut game_state = pong::GameState::new(); 
-    let mut frame_buffer = FrameBuffer::new(LCD_WIDTH as usize, LCD_HEIGHT as usize);
-    let renderer = Renderer::new();
+    use core::fmt::Write;
 
+
+    let mut game_state = pong::GameState::new(); 
+
+  //  let renderer = Renderer::new();
+
+
+    loop {
+        if controller_1.start() {
+            layer_1.text_writer().write_str("Player one started");
+        }
+
+        if controller_2.start() {
+            layer_1.text_writer().write_str("Player two started");
+        }
+    }
+
+
+/*
     renderer.render(&game_state, &mut frame_buffer);
     display.show(&mut frame_buffer);
 
     while !controller_1.start() && !controller_2.start() {
         /* Wait for game to start. */
     }
-    
-    loop {
+    */
+   // loop {
+        /*
         let ticks = system_clock::ticks();
         let t_delta: i32 = (ticks - last_render_time) as i32;
        
@@ -169,5 +198,6 @@ fn main(hw: board::Hardware) -> ! {
             display.show(&mut frame_buffer);
             last_render_time = ticks;
         }
-    }
+        */
+   // }*/
 }

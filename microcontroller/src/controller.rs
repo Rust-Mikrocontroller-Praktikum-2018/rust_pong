@@ -44,7 +44,7 @@ impl<'a> DefaultController<'a> {
         self.mutex.lock(|i2c_3| {
             let moves = &mut touch::touches(i2c_3).unwrap();
             moves.retain(|touch| { self.valid_move(touch.x as i32) });
-            found = moves.capacity() > 0;
+            found = moves.len() > 0;
         });
 
         found

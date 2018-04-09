@@ -2,6 +2,7 @@ use math::Vector;
 use alloc::LinkedList;
 use framebuffer::FrameBuffer;
 use pong::GameState;
+use display::Display;
 
 pub struct Renderer {
 
@@ -12,7 +13,7 @@ impl<'a> Renderer {
         Renderer {}
     }
 
-    pub fn render(&self, state: &GameState, frame_buffer: &'a mut FrameBuffer) {
+    pub fn render(&self, state: &GameState, display: &mut Display) {
         let a = Circle {
             position: Vector::from(state.ball.position),
             diameter: 30
@@ -27,7 +28,6 @@ impl<'a> Renderer {
         };
 
         let mut objects: LinkedList<&Drawable> = LinkedList::new();
-
         objects.push_back(&a);
         objects.push_back(&b);
 
@@ -38,7 +38,7 @@ impl<'a> Renderer {
 
         for p in points {
             if p.x > 0 && p.y > 0 {
-                frame_buffer.set_pixel(0xffffff, p.x as usize, p.y as usize);
+                display.set_pixel(p.x as usize, p.y as usize, 0xffffff);
             }
         }
     }

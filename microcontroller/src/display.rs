@@ -14,14 +14,8 @@ impl DefaultDisplay {
 }
 
 impl Display for DefaultDisplay {
-    fn show(&mut self, frame_buffer: &mut FrameBuffer) {
+    fn set_pixel(&mut self, x: usize, y: usize, hex_color: u32) {
         let mut layer_1 = self.display.layer_1().unwrap();
-        layer_1.clear();
-
-        for i in 0..(LCD_HEIGHT as usize) {
-            for j in 0..(LCD_WIDTH as usize) {
-                layer_1.print_point_color_at(j, i, Color::from_hex(frame_buffer.get_pixel(j, i)));
-            }
-        }
+        layer_1.print_point_color_at(x, y, Color::from_hex(hex_color));
     }
 }
