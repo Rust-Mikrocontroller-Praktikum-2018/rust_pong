@@ -135,13 +135,11 @@ fn main(hw: board::Hardware) -> ! {
 
     let mut game_state = pong::GameState::new(); 
     let mut display = DefaultDisplay::new(lcd);
-
     let mut renderer = Renderer::new();
-    renderer.render(&game_state, &mut display);
 
     loop {
         renderer.render(&game_state, &mut display);
-        game_state.update(Direction::None, Direction::None, 10.0);
+        game_state.update(Direction::None, Direction::None, 5.0);
     }
 
 
