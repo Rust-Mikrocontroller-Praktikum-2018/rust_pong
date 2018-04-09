@@ -1,6 +1,5 @@
-use num::clamp;
 
-use math::Vector;
+use math::{clamp, Vector};
 use core::cmp::{min, max};
 use display::Display;
 use controller::Direction;

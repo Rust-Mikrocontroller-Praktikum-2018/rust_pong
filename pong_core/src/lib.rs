@@ -3,7 +3,6 @@
 #![feature(inclusive_range_syntax)]
 
 extern crate alloc;
-extern crate num;
 
 pub mod pong;
 pub mod framebuffer;

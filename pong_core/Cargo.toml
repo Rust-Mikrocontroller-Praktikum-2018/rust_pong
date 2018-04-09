@@ -2,6 +2,3 @@
 name = "pong_core"
 version = "0.1.0"
 authors = ["Tim Joseph <tim.joseph@mctigger.com>"]
-
-[dependencies]
-num = "0.1"
