@@ -1,6 +1,4 @@
 use pong_core::display::Display;
-use pong_core::framebuffer::FrameBuffer;
-use pong_core::constants::{LCD_HEIGHT, LCD_WIDTH};
 use stm32f7::lcd::{Lcd, Color};
 
 pub struct DefaultDisplay {

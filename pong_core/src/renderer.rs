@@ -5,15 +5,17 @@ use pong::GameState;
 use display::Display;
 
 pub struct Renderer {
-
+    old_points: LinkedList<Point>
 }
 
 impl<'a> Renderer {
     pub fn new() -> Self {
-        Renderer {}
+        Renderer {
+            old_points: LinkedList::new()
+        }
     }
 
-    pub fn render(&self, state: &GameState, display: &mut Display) {
+    pub fn render(&mut self, state: &GameState, display: &mut Display) {
         let a = Circle {
             position: Vector::from(state.ball.position),
             diameter: 30
@@ -32,15 +34,20 @@ impl<'a> Renderer {
         objects.push_back(&b);
 
         let mut points: LinkedList<Point> = LinkedList::new();
+
         for o in objects {
             points.append(&mut o.draw());
         }
 
-        for p in points {
-            if p.x > 0 && p.y > 0 {
-                display.set_pixel(p.x as usize, p.y as usize, 0xffffff);
-            }
+        for p in &self.old_points {
+            display.set_pixel(p.x as usize, p.y as usize, 0x000000);   
         }
+
+        for p in &points {
+            display.set_pixel(p.x as usize, p.y as usize, 0xffffff);
+        }
+
+        self.old_points = points;
     }
 }
 

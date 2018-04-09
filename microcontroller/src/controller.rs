@@ -22,20 +22,20 @@ impl<'a> DefaultController<'a> {
     pub fn new(player: Players, mutex: &'a PrimaskMutex<I2C>) -> DefaultController<'a> {
         DefaultController {
             player: player, 
-            y_pos: (LCD_HEIGHT/2),
+            y_pos: ((LCD_HEIGHT as i32)/2),
             mutex: mutex,
         }
     }
 
     pub fn valid_move(&self, x_pos: i32) -> bool {
         match self.player {
-            Players::Player1 => (x_pos <= (LCD_WIDTH/2)),
-            Players::Player2 => (x_pos > (LCD_WIDTH/2)),
+            Players::Player1 => (x_pos <= ((LCD_WIDTH as i32)/2)),
+            Players::Player2 => (x_pos > ((LCD_WIDTH as i32)/2)),
         }
     }
 
     pub fn update_pos(&mut self, paddle: &Paddle) {
-        self.y_pos = paddle.position.y;
+        self.y_pos = paddle.position.y as i32;
     }
 
     pub fn start(&mut self) -> bool {

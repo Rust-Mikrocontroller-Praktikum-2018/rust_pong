@@ -134,7 +134,7 @@ fn main(hw: board::Hardware) -> ! {
     let mut game_state = pong::GameState::new(); 
     let mut display = DefaultDisplay::new(lcd);
 
-    let renderer = Renderer::new();
+    let mut renderer = Renderer::new();
     renderer.render(&game_state, &mut display);
 
     loop {
