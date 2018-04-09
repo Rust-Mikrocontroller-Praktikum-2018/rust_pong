@@ -14,7 +14,7 @@ impl<'a> Renderer {
 
     pub fn render(&self, state: &GameState, frame_buffer: &'a mut FrameBuffer) {
         let a = Circle {
-            position: state.ball.position,
+            position: Vector::from(state.ball.position),
             diameter: 30
         };
 

@@ -35,7 +35,7 @@ fn main() {
         let dir_a = controller_a.get_direction();
         let dir_b = controller_b.get_direction();
 
-        game_state.update(dir_a, dir_b, 1);
+        game_state.update(dir_a, dir_b, 1.0);
         renderer.render(&game_state, &mut frame_buffer);
         display.show(&mut frame_buffer);
 

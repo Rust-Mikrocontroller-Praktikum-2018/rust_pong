@@ -16,3 +16,12 @@ impl<T> Add for Vector<T> where T:Add {
         }
     }
 }
+
+impl From<Vector<f32>> for Vector<i32> {
+    fn from(v: Vector<f32>) -> Self {
+        Vector {
+            x: v.x as i32,
+            y: v.y as i32,
+        }
+    }
+}
