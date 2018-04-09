@@ -32,25 +32,10 @@ fn main() {
     let mut game_state = GameState::new();
 
     while display.window.borrow().is_open() && !display.window.borrow().is_key_down(Key::Escape) {
-        let dir = controller_a.get_direction();
+        let dir_a = controller_a.get_direction();
+        let dir_b = controller_b.get_direction();
 
-        let string = match dir {
-            Direction::None => "a:None",
-            Direction::Up => "a:Up",
-            Direction::Down => "a:Down",
-        };
-
-        println!("{}", string);
-
-        let dir = controller_b.get_direction();
-
-        let string = match dir {
-            Direction::None => "b:None",
-            Direction::Up => "b:Up",
-            Direction::Down => "b:Down",
-        };
-
-        game_state.update(Direction::Up, Direction::Down, 1);
+        game_state.update(dir_a, dir_b, 1);
         renderer.render(&game_state, &mut frame_buffer);
         display.show(&mut frame_buffer);
 
