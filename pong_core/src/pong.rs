@@ -98,7 +98,7 @@ impl GameState {
 
         */
 
-        let new_ball_position = self.ball.position + self.ball.direction;
+        let new_ball_position = self.ball.position + self.ball.direction * Vector {x: t_delta, y: t_delta};
         self.ball.position = new_ball_position;
 
         self.reflect();

@@ -9,10 +9,11 @@ use pong_core::display::Display;
 
 pub struct DefaultDisplay {
     pub window: Rc<RefCell<Window>>,
+    frame_buffer: FrameBuffer,
 }
 
 impl DefaultDisplay {
-    pub fn new(name: &str, width: usize, height: usize) -> Self {
+    pub fn new(name: &str, width: usize, height: usize, frame_buffer: FrameBuffer) -> Self {
         let window = Window::new(name, width, height, WindowOptions::default()).unwrap_or_else(|e| {
             panic!("{}", e);
         });
@@ -20,14 +21,21 @@ impl DefaultDisplay {
         let rc_window = Rc::new(RefCell::new(window));
 
         DefaultDisplay {
-            window: rc_window
+            window: rc_window,
+            frame_buffer
         }
     }
+
+    pub fn show(&self) {
+        let buffer = &self.frame_buffer.buffer;
+        self.window.borrow_mut().update_with_buffer(buffer).unwrap();
+    }
+
 }
 
 impl Display for DefaultDisplay {
-    fn show(&mut self, frame_buffer: &mut FrameBuffer) {
-        let buffer = &frame_buffer.buffer;
-        self.window.borrow_mut().update_with_buffer(buffer).unwrap();
+    fn set_pixel(&mut self, x: usize, y: usize, hex_color: u32) {
+        println!("{}/{}: {}", x, y, hex_color);
+        self.frame_buffer.set_pixel(hex_color, x, y);
     }
 }

@@ -1,4 +1,4 @@
-use core::ops::Add;
+use core::ops::{Add, Mul};
 
 #[derive(Debug, Copy, Clone)]
 pub struct Vector<T> {
@@ -13,6 +13,17 @@ impl<T> Add for Vector<T> where T:Add {
         Vector{
             x: self.x + rhs.x,
             y: self.y + rhs.y,
+        }
+    }
+}
+
+impl<T> Mul for Vector<T> where T:Mul{
+    type Output = Vector<T::Output>;
+
+    fn mul(self, rhs: Vector<T>) -> Vector<T::Output> {
+        Vector{
+            x: self.x * rhs.x,
+            y: self.y * rhs.y,
         }
     }
 }
