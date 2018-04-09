@@ -3,39 +3,42 @@ use alloc::LinkedList;
 use framebuffer::FrameBuffer;
 use pong::GameState;
 
-trait Renderer {
-    fn render(&self, framebuffer: FrameBuffer) -> FrameBuffer {
-        framebuffer
-    }
+pub struct Renderer {
+
 }
 
-trait Drawable {
-    fn draw(&self) -> LinkedList<Point>;
-}
-
-pub fn draw_state(state: &GameState, frame_buffer: &mut FrameBuffer) {
-
-    let a = Circle {
-        position: state.ball.position,
-        diameter: 30
-    };
-
-    let mut objects: LinkedList<&Drawable> = LinkedList::new();
-
-    objects.push_back(&a);
-
-    let mut points: LinkedList<Point> = LinkedList::new();
-    for o in objects {
-        points.append(&mut o.draw());
+impl<'a> Renderer {
+    pub fn new() -> Self {
+        Renderer {}
     }
 
-    for p in points {
-        if p.x > 0 && p.y > 0 {
-            frame_buffer.set_pixel(0xffffff, p.x as usize, p.y as usize);
+    pub fn render(&self, state: &GameState, frame_buffer: &'a mut FrameBuffer) {
+        let a = Circle {
+            position: state.ball.position,
+            diameter: 30
+        };
+
+        let mut objects: LinkedList<&Drawable> = LinkedList::new();
+
+        objects.push_back(&a);
+
+        let mut points: LinkedList<Point> = LinkedList::new();
+        for o in objects {
+            points.append(&mut o.draw());
+        }
+
+        for p in points {
+            if p.x > 0 && p.y > 0 {
+                frame_buffer.set_pixel(0xffffff, p.x as usize, p.y as usize);
+            }
         }
     }
 }
 
+
+trait Drawable {
+    fn draw(&self) -> LinkedList<Point>;
+}
 
 struct Circle {
     position: Vector<i32>,

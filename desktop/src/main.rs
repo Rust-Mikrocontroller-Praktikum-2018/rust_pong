@@ -15,7 +15,7 @@ use pong_core::pong::Game;
 use pong_core::framebuffer::FrameBuffer;
 use pong_core::display::Display;
 use pong_core::controller::{Controller, Direction};
-use pong_core::renderer::draw_state;
+use pong_core::renderer::Renderer;
 use display::DefaultDisplay;
 use controller::DefaultController;
 
@@ -23,6 +23,7 @@ fn main() {
     println!("Hello, world!");
 
     let mut frame_buffer = FrameBuffer::new(640, 360);
+    let renderer = Renderer::new();
     let mut display = DefaultDisplay::new("Game", 640, 360);
 
     let controller_a = DefaultController::new(display.window.clone(), Key::Up, Key::Down);
@@ -53,7 +54,7 @@ fn main() {
         println!("{:?}", game.state);
         println!("{:?}", frame_buffer.buffer.len());
 
-        draw_state(&game.state, &mut frame_buffer);
+        renderer.render(&game.state, &mut frame_buffer);
         display.show(&frame_buffer);
 
     }
