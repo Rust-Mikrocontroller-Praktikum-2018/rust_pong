@@ -125,6 +125,7 @@ fn main(hw: board::Hardware) -> ! {
     layer_1.clear();
     layer_2.clear();
     lcd::init_stdout(layer_2);
+    lcd.set_background_color(lcd::Color::from_hex(0x000000));
 
     // i2c
     i2c::init_pins_and_clocks(rcc, &mut gpio);
