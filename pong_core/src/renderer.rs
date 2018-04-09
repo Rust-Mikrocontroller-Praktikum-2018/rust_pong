@@ -18,9 +18,18 @@ impl<'a> Renderer {
             diameter: 30
         };
 
+
+        let b = Rectangle {
+            curr: Vector{
+                x: 100,
+                y: 100,
+            } ,
+        };
+
         let mut objects: LinkedList<&Drawable> = LinkedList::new();
 
         objects.push_back(&a);
+        objects.push_back(&b);
 
         let mut points: LinkedList<Point> = LinkedList::new();
         for o in objects {
@@ -44,6 +53,23 @@ struct Circle {
     position: Vector<i32>,
     diameter: i32,
 }
+
+struct Rectangle {
+    curr: Vector<i32>,
+//    size: Vector<i32>,
+}
+
+struct Point {
+    x: i32,
+    y: i32,
+}
+
+
+fn quadrat (value: i32) -> i32 {
+    value*value
+}
+
+
 
 impl Drawable for Circle {
     fn draw(&self) -> LinkedList<Point> {
@@ -100,85 +126,52 @@ impl Drawable for Circle {
     }
 }
 
-struct Rectangle {
-    curr: Vector<i32>,
-    size: Vector<i32>,
-}
 
 
 
-struct Point {
-    x: i32,
-    y: i32,
-}
+impl Drawable for Rectangle {
 
+    fn draw (&self) -> LinkedList<Point> {
+        let length_y = 90;
+        let length_x = 17;
 
-fn quadrat (value: i32) -> i32 {
-    value*value
-}
+        let leftedgetop = Point { x: self.curr.x - (length_x / 2), y: self.curr.y + (length_y / 2) };
+        let rightedgebuttom = Point { x: self.curr.x + (length_x / 2), y: self.curr.y - (length_y / 2) };
+        //let  leftedgebuttom =  Point{x : position.x - (length_x/2), y : position.y - (length_x/2)};
+        //let  rightedgetop =   Point{x : position.x + (length_x/2), y : position.y + (length_y/2)};
 
-/*
-fn calculate_pixels_rectangle(rect: &Rectangle) -> LinkedList<Point> {
-    
-    let length_y = 15;
-    let length_x = 8;
+        let mut list: LinkedList<Point> = LinkedList::new();
 
-    let  leftedgeup =    Point{x : position.x - (length_x/2), y : position.y + (length_y/2)};
-    let  leftedgedown =  Point{x : position.x - (length_x/2), y : position.y - (length_x/2)};
-    let  rightedgeup =   Point{x : position.x + (length_x/2), y : position.y + (length_y/2)};
-    let  rightedgedown = Point{x : position.x + (length_x/2), y : position.y - (length_y/2)};
+        for x_coordinate in leftedgetop.x..rightedgebuttom.x {
+            for y_coordinate in rightedgebuttom.y..leftedgetop.y{
+                let mut point = Point { x: x_coordinate, y: y_coordinate };
+                list.push_back(point);
+            }
+        }
 
-    let mut list: LinkedList<Point> = LinkedList::new();
-    
-    for i in leftedgeup.x..=rightedgeup.x{
-        let mut point = Point { x : i , y : leftedgeup.y};
-        list.push_back(point);
-    }
+        // Code for rectanlge non-solid
+        /*
+        for i in leftedgetop.x..=rightedgetop.x{
+            let mut point = Point { x : i , y : leftedgetop.y};
+            list.push_back(point);
+        }
 
-    for i in leftedgedown.x..=rightedgedown.x{
-        let mut point = Point { x  :i , y : leftedgedown.y};
-        list.push_back(point);
-    }
+        for i in leftedgebuttom.x..=rightedgebuttom.x{
+            let mut point = Point { x  :i , y : leftedgebuttom.y};
+            list.push_back(point);
+        }
 
-    for i in leftedgedown.y..=leftedgeup.y{
-        let mut point = Point { x: leftedgeup.x , y: i};
-        list.push_back(point);
-    }
+        for i in leftedgebuttom.y..=leftedgetop.y{
+            let mut point = Point { x: leftedgetop.x , y: i};
+            list.push_back(point);
+        }
 
-    for i in rightedgedown.y..=rightedgeup.y{
-        let mut point = Point { x: rightedgeup.x , y : i};
-        list.push_back(point);
-    }      
+        for i in rightedgebuttom.y..=rightedgetop.y{
+            let mut point = Point { x: rightedgetop.x , y : i};
+            list.push_back(point);
+        }
 
+        */
     list
-}
-
-fn calculate_pixels_circle (circ: &Circle) -> LinkedList<Point> {
-     
-    let radius : i32 = circ.diameter/2;
-     
-    let mut list: LinkedList<Point> = LinkedList::new();   
-
-    for i in circ.curr.x-radius..circ.curr.x+radius {
-
-        //TODO sqrt()
-        let mut pointbuttom = Point { x: i , y : (quadrat(radius) - quadrat(circ.curr.x))};
-    
-        let mut pointsover = Point {x:i,y:-pointbuttom.y};
-        list.push_back(pointbuttom);
-        list.push_back(pointsover);
-    }
-    list
-}
-
-
-
-
-fn draw (points: LinkedList<Point>) {
-     
-    for element in points
-    {
-        //layer.print_point_color_at(element.x,element.y,farbe);
     }
 }
-*/
