@@ -1,7 +1,7 @@
 use pong_core::constants::{LCD_HEIGHT, LCD_WIDTH};
 use pong_core::controller::Direction;
+use pong_core::pong::Paddle;
 use stm32f7::{touch, interrupts::primask_mutex::PrimaskMutex};
-//use interrupts::
 use stm32f7::i2c::I2C;
 use core::cmp::Ordering;
 
@@ -34,8 +34,8 @@ impl<'a> DefaultController<'a> {
         }
     }
 
-    pub fn update_pos(&mut self, y_pos: i32) {
-        self.y_pos = y_pos;
+    pub fn update_pos(&mut self, paddle: &Paddle) {
+        self.y_pos = paddle.position.y;
     }
 
     pub fn start(&mut self) -> bool {

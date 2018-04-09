@@ -20,7 +20,11 @@ extern crate compiler_builtins;
 extern crate r0;
 
 // game related structs
-use pong_core::{pong};
+use pong_core::{pong, framebuffer, constants, renderer, display as core_display};
+use constants::{LCD_HEIGHT, LCD_WIDTH};
+use renderer::Renderer;
+use core_display::Display;
+use framebuffer::FrameBuffer;
 
 // hardware register structs with accessor methods
 use stm32f7::{board, embedded, lcd, sdram, system_clock, i2c, interrupts};
@@ -132,11 +136,16 @@ fn main(hw: board::Hardware) -> ! {
     let threshold = 20;
     let mut last_render_time = system_clock::ticks();
 
-  //  let mut display = DefaultDisplay::new(lcd);
+    let mut display = DefaultDisplay::new(lcd);
     let mut controller_1 = DefaultController::new(Players::Player1, &mutex);
     let mut controller_2 = DefaultController::new(Players::Player2, &mutex);
 
     let mut game_state = pong::GameState::new(); 
+    let mut frame_buffer = FrameBuffer::new(LCD_WIDTH as usize, LCD_HEIGHT as usize);
+    let renderer = Renderer::new();
+
+    renderer.render(&game_state, &mut frame_buffer);
+    display.show(&mut frame_buffer);
 
     while !controller_1.start() && !controller_2.start() {
         /* Wait for game to start. */
@@ -153,6 +162,11 @@ fn main(hw: board::Hardware) -> ! {
                 t_delta
             );   
 
+            controller_1.update_pos(&game_state.paddle_1);
+            controller_2.update_pos(&game_state.paddle_2);
+
+            renderer.render(&game_state, &mut frame_buffer);
+            display.show(&mut frame_buffer);
             last_render_time = ticks;
         }
     }

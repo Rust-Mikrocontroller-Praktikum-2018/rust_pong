@@ -55,8 +55,8 @@ impl Drawable for Circle {
         let mut dx = 1;
         let mut dy = 1;
         let mut err = dx - self.diameter;
-        let mut x0 = self.position.x;
-        let mut y0 = self.position.y;
+        let x0 = self.position.x;
+        let y0 = self.position.y;
 
         while x >= y {
             list.push_back(Point {

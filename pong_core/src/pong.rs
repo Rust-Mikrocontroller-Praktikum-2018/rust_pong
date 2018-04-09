@@ -1,10 +1,9 @@
 use math::Vector;
 use core::cmp::{min, max};
 use display::Display;
-use controller::Controller;
 use controller::Direction;
 
-use constants::{PADDLE_OFFSET, PADDLE_HEIGHT, PADDLE_SPEED, LCD_HEIGHT};
+use constants::{PADDLE_OFFSET, PADDLE_HEIGHT, PADDLE_SPEED, LCD_HEIGHT, LCD_WIDTH};
 
 pub struct Ball {
     pub position: Vector<i32>,
@@ -39,8 +38,8 @@ impl GameState {
             direction_y: 0.5,
         };
 
-        let paddle_1 = Paddle { position: Vector { x: PADDLE_OFFSET, y: height / 2 } };
-        let paddle_2 = Paddle { position: Vector { x: width - PADDLE_OFFSET, y: height / 2 } };
+        let paddle_1 = Paddle { position: Vector { x: PADDLE_OFFSET, y: LCD_HEIGHT / 2 } };
+        let paddle_2 = Paddle { position: Vector { x: LCD_WIDTH - PADDLE_OFFSET, y: LCD_HEIGHT / 2 } };
 
         GameState {
             ball: ball,
@@ -67,7 +66,6 @@ impl GameState {
 
         GameState::normalize_paddle(&mut self.paddle_1);
         GameState::normalize_paddle(&mut self.paddle_2);
-
         // Problem: Need to update y_pos in controller, but cqannot do it agnostically
     }
 }
