@@ -51,7 +51,7 @@ impl GameState {
         }
     }
 
-    pub fn normalize_paddle(paddle: &mut Paddle) {
+    pub fn clip_paddle(paddle: &mut Paddle) {
         paddle.position.y = min(paddle.position.y, LCD_HEIGHT - PADDLE_HEIGHT / 2);
         paddle.position.y = max(paddle.position.y, PADDLE_HEIGHT / 2);
     }
@@ -64,8 +64,8 @@ impl GameState {
         self.paddle_1.position.y += distance * action_1;
         self.paddle_2.position.y += distance * action_2;
 
-        GameState::normalize_paddle(&mut self.paddle_1);
-        GameState::normalize_paddle(&mut self.paddle_2);
+        GameState::clip_paddle(&mut self.paddle_1);
+        GameState::clip_paddle(&mut self.paddle_2);
         // Problem: Need to update y_pos in controller, but cqannot do it agnostically
     }
 }
