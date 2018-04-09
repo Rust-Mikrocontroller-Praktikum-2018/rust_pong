@@ -20,10 +20,11 @@ extern crate compiler_builtins;
 extern crate r0;
 
 // game related structs
-use pong_core::{pong, framebuffer, constants, renderer, display as core_display};
+use pong_core::{pong, framebuffer, constants, controller as core_controller, renderer, display as core_display};
 use constants::{LCD_HEIGHT, LCD_WIDTH};
 use renderer::Renderer;
 use core_display::Display;
+use core_controller::Direction;
 use framebuffer::FrameBuffer;
 
 // hardware register structs with accessor methods
@@ -138,7 +139,8 @@ fn main(hw: board::Hardware) -> ! {
     renderer.render(&game_state, &mut display);
 
     loop {
-
+        renderer.render(&game_state, &mut display);
+        game_state.update(Direction::None, Direction::None, 10.0);
     }
 
 
