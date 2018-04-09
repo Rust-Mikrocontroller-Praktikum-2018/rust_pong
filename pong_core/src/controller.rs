@@ -1,10 +1,10 @@
 pub enum Direction {
-    Up,
-    Down,
-    None
+    Up = 1,
+    Down = -1,
+    None = 0
 }
 
 pub trait Controller {
-    fn start(&self) -> bool;
-    fn get_direction(&self) -> Direction;
+    fn start(&mut self) -> bool;
+    fn get_direction(&mut self) -> Direction;
 }

@@ -1,5 +1,5 @@
 use framebuffer::FrameBuffer;
 
 pub trait Display {
-    fn show(&mut self, frame_buffer: &FrameBuffer);
+    fn show(&mut self, frame_buffer: &mut FrameBuffer);
 }

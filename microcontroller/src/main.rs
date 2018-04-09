@@ -6,6 +6,11 @@
 #![no_std]
 #![no_main]
 
+mod controller;
+mod display;
+use controller::{DefaultController, Players};
+use display::DefaultDisplay;
+
 extern crate stm32f7_discovery as stm32f7;
 
 extern crate pong_core;
@@ -18,7 +23,8 @@ extern crate r0;
 use pong_core::{pong};
 
 // hardware register structs with accessor methods
-use stm32f7::{board, embedded, lcd, sdram, system_clock, touch, i2c};
+use stm32f7::{board, embedded, lcd, sdram, system_clock, i2c, interrupts};
+use interrupts::primask_mutex::PrimaskMutex;
 
 #[no_mangle]
 pub unsafe extern "C" fn reset() -> ! {
@@ -121,39 +127,33 @@ fn main(hw: board::Hardware) -> ! {
     i2c_3.test_1();
     i2c_3.test_2();
 
-    touch::check_family_id(&mut i2c_3).unwrap();
+    let mutex = PrimaskMutex::new(i2c_3);
 
-    let threshold = 10;
+    let threshold = 20;
     let mut last_render_time = system_clock::ticks();
 
-    let mut game = pong::Game::new(); 
+  //  let mut display = DefaultDisplay::new(lcd);
+    let mut controller_1 = DefaultController::new(Players::Player1, &mutex);
+    let mut controller_2 = DefaultController::new(Players::Player2, &mutex);
 
+    let mut game_state = pong::GameState::new(); 
+
+    while !controller_1.start() && !controller_2.start() {
+        /* Wait for game to start. */
+    }
+    
     loop {
         let ticks = system_clock::ticks();
         let t_delta: i32 = (ticks - last_render_time) as i32;
        
-        if t_delta < threshold {
-            continue;
+        if t_delta >= threshold {
+            game_state.update(
+                controller_1.get_direction(),
+                controller_2.get_direction(),
+                t_delta
+            );   
+
+            last_render_time = ticks;
         }
-        let mut new_player_1_pos: i32 = 0;
-        let mut new_player_2_pos: i32 = 0;
-
-        // poll for new touch data to update positions
-        for touch in &touch::touches(&mut i2c_3).unwrap() {
-            if (touch.x as usize) < 480 / 2 {
-                new_player_1_pos = touch.y as i32; 
-            } else {
-                new_player_2_pos = touch.y as i32;
-            }
-        }
-
-        game.update_state(
-            new_player_1_pos,
-            new_player_2_pos,
-            t_delta
-        );
-
-       // renderer.render(game.state);
-        last_render_time = ticks;
     }
 }

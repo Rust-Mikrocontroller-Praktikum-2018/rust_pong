@@ -9,5 +9,5 @@ pub mod framebuffer;
 pub mod display;
 pub mod controller;
 pub mod renderer;
-mod math;
-mod constants;
+pub mod constants;
+pub mod math;
