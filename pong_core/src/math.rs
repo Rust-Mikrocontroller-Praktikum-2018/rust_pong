@@ -92,6 +92,10 @@ pub fn cross_product(a: Vector<f32>, b: Vector<f32>) -> f32 {
     a.x * b.y - a.y * b.x
 }
 
+pub fn length(a: Vector<f32>) -> f32 {
+    1.0 / (a.x * a.x + a.y * a.y).inv_sqrt32()
+}
+
 pub fn unit(a: Vector<f32>) -> Vector<f32> {
     let length = (a.x*a.x + a.y*a.y).inv_sqrt32();
     a * Vector {x: length, y: length}

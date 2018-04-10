@@ -3,7 +3,7 @@ use alloc::boxed::Box;
 use core::cmp::{min, max};
 use core::option::{Option};
 
-use math::{clamp, cross_product, unit, Vector};
+use math::{clamp, cross_product, unit, length, Vector};
 use display::Display;
 use controller::Direction;
 
@@ -49,12 +49,12 @@ impl Rectangle for Paddle {
 
 impl CollisionEffect for Edge {
     fn on_collision(&self, mut new_state: GameState, old_state: GameState, t: f32, u: f32) -> GameState {
-        let d = old_state.ball.direction;
-        let n = Vector {x: self.direction.y, y: -self.direction.x}; // + Vector::new((u - 0.5) / 0.5) * self.direction;
+        let d = unit(old_state.ball.direction);
+        let n = unit(Vector {x: self.direction.y, y: -self.direction.x}); // + Vector::new((u - 0.5) / 0.5) * self.direction;
 
         new_state.ball.position = old_state.ball.position + old_state.ball.direction * Vector {x: u, y: u};
         // Reflect ball
-        new_state.ball.direction = d - Vector::new(2.0) * (Vector::new(cross_product(d, n)) * n);
+        new_state.ball.direction = Vector::new(length(new_state.ball.direction)) * unit(d - Vector::new(2.0) * (Vector::new(cross_product(d, n)) * n));
         new_state.ball.position = new_state.ball.position + new_state.ball.direction * Vector {x: (1.0-u), y: (1.0-u)};
 
         new_state
@@ -245,13 +245,7 @@ impl Game {
         for c in collisions {
             match c {
                 Some((t, u, effect)) => {
-                    //new_state = effect.on_collision(new_state, old_state);
-                    let dir = Vector {x: -1.0, y: 1.0};
-
-                    new_state.ball.position = old_state.ball.position + old_state.ball.direction * Vector {x: u, y: u};
-                    new_state.ball.direction = old_state.ball.direction * dir;
-                    new_state.ball.position = new_state.ball.position + new_state.ball.direction * Vector {x: (2.0-u), y: (2.0-u)};
-
+                    new_state = effect.on_collision(new_state, old_state, t, u);
                 },
                 None => {}
             }

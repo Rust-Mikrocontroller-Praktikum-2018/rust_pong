@@ -46,6 +46,8 @@ fn main() {
         start = Instant::now();
         game_state = Game::update(game_state, dir_a, dir_b, 0.5);
 
+        println!("{:?}", game_state);
+
         renderer.render(&game_state, &mut display);
         display.show();
 
