@@ -1,4 +1,7 @@
-use core::ops::{Add, Sub, Mul};
+use core::ops::{Add, Sub, Mul, Div};
+use core::mem;
+use core::{f32, f64};
+
 
 #[derive(Debug, Copy, Clone)]
 pub struct Vector<T> {
@@ -39,6 +42,17 @@ impl<T> Mul for Vector<T> where T:Mul {
     }
 }
 
+impl<T> Div for Vector<T> where T:Div {
+    type Output = Vector<T::Output>;
+
+    fn div(self, rhs: Vector<T>) -> Vector<T::Output> {
+        Vector{
+            x: self.x / rhs.x,
+            y: self.y / rhs.y,
+        }
+    }
+}
+
 impl From<Vector<f32>> for Vector<i32> {
     fn from(v: Vector<f32>) -> Self {
         Vector {
@@ -61,4 +75,42 @@ pub fn clamp<T: PartialOrd>(input: T, min: T, max: T) -> T {
 
 pub fn cross_product(a: Vector<f32>, b: Vector<f32>) -> f32 {
     a.x * b.y - a.y * b.x
+}
+
+pub fn unit(a: Vector<f32>) -> Vector<f32> {
+    let length = (a.x*a.x + a.y*a.y).inv_sqrt32();
+    a * Vector {x: length, y: length}
+}
+
+// https://github.com/emkw/rust-fast_inv_sqrt/blob/master/src/lib.rs
+pub trait InvSqrt32 {
+    fn inv_sqrt32(self) -> f32;
+}
+
+impl InvSqrt32 for f32 {
+    fn inv_sqrt32(self: f32) -> f32 {
+        if cfg!(not(feature = "omit-checking")) {
+            if self <= 0.0 {
+                return f32::NAN;
+            } else if self == f32::INFINITY {
+                return 0.0;
+            } else if self < f32::MIN_POSITIVE {
+                return f32::INFINITY;
+            }
+        }
+
+        // Magic number based on Chris Lomont work:
+        // const MAGIC_U32: u32 = 0x5f375a86;
+        // The Original Magic Number:
+        // const MAGIC_32: u32 = 0x5f3759df;
+        const threehalfs: f32 = 1.5f32;
+        let x2: f32 = self * 0.5f32;
+        let mut i: u32 = unsafe { mem::transmute(self) }; // evil floating point bit level hacking
+        i = 0x5f375a86 - (i >> 1);                        // what the fuck?
+        let y: f32 = unsafe { mem::transmute(i) };
+        let y  = y * ( threehalfs - ( x2 * y * y ) );     // 1st iteration
+//		y  = y * ( threehalfs - ( x2 * y * y ) );       // 2nd iteration, this can be removed
+
+        return y;
+    }
 }

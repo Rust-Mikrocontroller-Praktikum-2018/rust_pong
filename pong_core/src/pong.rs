@@ -1,9 +1,14 @@
-use math::{clamp, cross_product, Vector};
+use math::{clamp, cross_product, unit, Vector};
 use core::cmp::{min, max};
 use display::Display;
 use controller::Direction;
 
 use constants::{PADDLE_OFFSET, PADDLE_HEIGHT, PADDLE_SPEED, LCD_HEIGHT, LCD_WIDTH};
+
+trait Rectangle {
+    fn height(&self) -> f32;
+    fn width(&self) -> f32;
+}
 
 #[derive(Debug, Copy, Clone)]
 pub struct Ball {
@@ -17,6 +22,16 @@ pub struct Paddle {
     pub position: Vector<f32>,
     pub height: f32,
     pub width: f32,
+}
+
+impl Rectangle for Paddle {
+    fn height(&self) -> f32 {
+        self.height
+    }
+
+    fn width(&self) -> f32 {
+        self.height
+    }
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -41,7 +56,7 @@ impl GameState {
         let ball = Ball {
             position: Vector { x: LCD_WIDTH / 2.0, y: LCD_HEIGHT / 2.0 },
             direction: Vector { x: 1.0, y: 1.0 },
-            diameter: 15.0,
+            diameter: 25.0,
         };
 
         let paddle_1 = Paddle {
@@ -104,41 +119,42 @@ impl Game {
         game_state
     }
 
-    fn intersect(p: Vector<f32>, r: Vector<f32>, q: Vector<f32>, s: Vector<f32>) -> f32 {
-        cross_product((q - p), s) / cross_product(r, s)
+    fn intersect(p: Vector<f32>, r: Vector<f32>, q: Vector<f32>, s: Vector<f32>) -> (f32, f32) {
+        let t = cross_product((q - p), s) / cross_product(r, s);
+        let u = cross_product((q - p), r) / cross_product(s, r);
+
+        (t, u)
     }
 
-    fn detec_collision_line() {
-
-    }
-
-    fn detect_collision(mut new_state: GameState, old_state: GameState) -> GameState {
+    fn detect_collision(mut new_state: GameState, old_state: GameState) -> (GameState, f32, f32) {
         let movement_ball = new_state.ball.position - old_state.ball.position;
         let movement_paddle = Vector {x: 0.0, y: new_state.paddle_2.height};
 
+        let position_ball = old_state.ball.position;
         let position_paddle = Vector {
             x: new_state.paddle_2.position.x - new_state.paddle_2.width/ 2.0,
             y: new_state.paddle_2.position.y - new_state.paddle_2.height / 2.0,
         };
 
-        // see https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
-        let t = Self::intersect(position_paddle, movement_paddle, new_state.ball.position, movement_ball);
-        let u = Self::intersect(new_state.ball.position, movement_ball, position_paddle, movement_paddle);
+        let (t, u) = Self::intersect(position_paddle, movement_paddle, position_ball, movement_ball);
 
         if cross_product(movement_ball, movement_paddle) != 0.0 && 0.0 <= t && t <= 1.0 && 0.0 <= u && u <= 1.0 {
-            let mut dir = Vector {x: -1.0, y: -1.0};
-            if t < 0.5 {
+            let mut dir = Vector {x: -1.0, y: 1.0};
+            /*
+            if t > 0.5 {
                 dir = Vector {x: -1.0, y: 1.0};
             }
-
-            new_state.ball.direction = new_state.ball.direction * dir;
+            */
+            new_state.ball.position = old_state.ball.position + old_state.ball.direction * Vector {x: u, y: u};
+            new_state.ball.direction = old_state.ball.direction * dir;
+            new_state.ball.position = new_state.ball.position + new_state.ball.direction * Vector {x: (1.0-u), y: (1.0-u)};
         }
 
-        new_state
+        (new_state, t, u)
 
     }
 
-    pub fn update(mut game_state: GameState, action_1: Direction, action_2: Direction, t_delta: f32) -> GameState {
+    pub fn update(mut game_state: GameState, action_1: Direction, action_2: Direction, t_delta: f32) -> (GameState, f32, f32) {
         let old_state = game_state;
 
         let action_1 = action_1 as i32 as f32;

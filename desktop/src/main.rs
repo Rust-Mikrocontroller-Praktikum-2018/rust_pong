@@ -11,6 +11,7 @@ use minifb::{Key, WindowOptions, Window};
 use rand::{Rng, thread_rng};
 use std::time::Instant;
 
+use pong_core::math::{Vector, unit, InvSqrt32};
 use pong_core::pong::{GameState, Game};
 use pong_core::framebuffer::FrameBuffer;
 use pong_core::display::Display;
@@ -44,9 +45,13 @@ fn main() {
         let t_delta = (t_delta.as_secs() * 1000) as f32 + (t_delta.subsec_nanos() / 1000000) as f32;
         start = Instant::now();
         let q = Game::update(game_state, dir_a, dir_b, 0.1);
-        //game_state = q.0;
-        game_state = q;
-        //println!("{}, {}", q.1, q.2);
+        game_state = q.0;
+
+        if q.1 <= 1.0 && q.1 >= 0.0 && q.2 <= 1.0 && q.2 >= 0.0 {
+            println!("{}, {}", q.1, q.2);
+            println!("position: {:?}", game_state.ball.position);
+            println!("direction: {:?}", game_state.ball.direction);
+        }
 
         renderer.render(&game_state, &mut display);
         display.show();

@@ -18,7 +18,7 @@ impl<'a> Renderer {
     pub fn render(&mut self, state: &GameState, display: &mut Display) {
         let ball = Circle {
             position: Vector::from(state.ball.position),
-            diameter: 30
+            diameter: state.ball.diameter as i32,
         };
 
 
