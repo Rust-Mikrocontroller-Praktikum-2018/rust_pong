@@ -16,3 +16,4 @@ branch = "smoltcp"
 
 [profile.release]
 lto = true
+

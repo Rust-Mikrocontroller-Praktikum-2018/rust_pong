@@ -6,9 +6,9 @@
 #![no_std]
 #![no_main]
 
-mod controller;
+mod player;
 mod display;
-use controller::{DefaultController, Players};
+use player::PlayerState;
 use display::DefaultDisplay;
 
 extern crate stm32f7_discovery as stm32f7;
@@ -20,16 +20,13 @@ extern crate compiler_builtins;
 extern crate r0;
 
 // game related structs
-use pong_core::{pong, framebuffer, constants, controller as core_controller, renderer, display as core_display};
-use constants::{LCD_HEIGHT, LCD_WIDTH};
+use pong_core::{pong, constants, renderer};
+use pong::{Game, GameState};
+use constants::LCD_WIDTH;
 use renderer::Renderer;
-use core_display::Display;
-use core_controller::Direction;
-use framebuffer::FrameBuffer;
 
 // hardware register structs with accessor methods
-use stm32f7::{board, embedded, lcd, sdram, system_clock, i2c, interrupts, touch};
-use interrupts::primask_mutex::PrimaskMutex;
+use stm32f7::{board, embedded, lcd, sdram, system_clock, i2c, touch};
 
 #[no_mangle]
 pub unsafe extern "C" fn reset() -> ! {
@@ -133,72 +130,39 @@ fn main(hw: board::Hardware) -> ! {
     i2c_3.test_1();
     i2c_3.test_2();
 
-    let mut game_state = pong::GameState::new(); 
+    let mut game_state = GameState::new(); 
     let mut display = DefaultDisplay::new(lcd);
     let mut renderer = Renderer::new();
 
+    let mut player_1 = PlayerState::new();
+    let mut player_2 = PlayerState::new();
+
+    let t_delta: f32 = 20.0;
+
     loop {
         renderer.render(&game_state, &mut display);
-        game_state.update(Direction::None, Direction::None, 5.0);
-    }
+        let mut input_1 = player_1.y;
+        let mut input_2 = player_2.y;
 
+        for touch in &touch::touches(&mut i2c_3).unwrap() {
+            let action_x = touch.x as i32;
+            let action_y = touch.y as i32;
 
-/*
-    let mutex = PrimaskMutex::new(i2c_3);
-
-    let threshold = 20;
-    let mut last_render_time = system_clock::ticks();
-
-    let mut display = DefaultDisplay::new(lcd);
-    let mut controller_1 = DefaultController::new(Players::Player1, &mutex);
-    let mut controller_2 = DefaultController::new(Players::Player2, &mutex);
-
-    use core::fmt::Write;
-
-
-    let mut game_state = pong::GameState::new(); 
-
-  //  let renderer = Renderer::new();
-
-
-    loop {
-        if controller_1.start() {
-            layer_1.text_writer().write_str("Player one started");
+            if action_x < (LCD_WIDTH as i32) / 2 {
+                input_1 = action_y;
+            } else {
+                input_2 = action_y;
+            }
         }
 
-        if controller_2.start() {
-            layer_1.text_writer().write_str("Player two started");
-        }
+        game_state = Game::update(
+            game_state,
+            player_1.get_direction(input_1),
+            player_2.get_direction(input_2),
+            t_delta
+        );
+
+        player_1.update(&game_state.paddle_1);
+        player_2.update(&game_state.paddle_2);
     }
-
-
-/*
-    renderer.render(&game_state, &mut frame_buffer);
-    display.show(&mut frame_buffer);
-
-    while !controller_1.start() && !controller_2.start() {
-        /* Wait for game to start. */
-    }
-    */
-   // loop {
-        /*
-        let ticks = system_clock::ticks();
-        let t_delta: i32 = (ticks - last_render_time) as i32;
-       
-        if t_delta >= threshold {
-            game_state.update(
-                controller_1.get_direction(),
-                controller_2.get_direction(),
-                t_delta
-            );   
-
-            controller_1.update_pos(&game_state.paddle_1);
-            controller_2.update_pos(&game_state.paddle_2);
-
-            renderer.render(&game_state, &mut frame_buffer);
-            display.show(&mut frame_buffer);
-            last_render_time = ticks;
-        }
-        */
-   // }*/
 }

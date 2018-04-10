@@ -251,14 +251,12 @@ impl Game {
                     new_state.ball.position = old_state.ball.position + old_state.ball.direction * Vector {x: u, y: u};
                     new_state.ball.direction = old_state.ball.direction * dir;
                     new_state.ball.position = new_state.ball.position + new_state.ball.direction * Vector {x: (2.0-u), y: (2.0-u)};
-
                 },
                 None => {}
             }
         }
 
         new_state
-
     }
 
     pub fn update(mut game_state: GameState, action_1: Direction, action_2: Direction, t_delta: f32) -> GameState {
