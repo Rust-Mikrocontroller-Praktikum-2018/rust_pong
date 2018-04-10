@@ -1,6 +1,5 @@
 extern crate minifb;
 extern crate rand;
-#[macro_use]
 extern crate itertools;
 
 extern crate pong_core;
@@ -12,7 +11,7 @@ use minifb::{Key, WindowOptions, Window};
 use rand::{Rng, thread_rng};
 use std::time::Instant;
 
-use pong_core::pong::GameState;
+use pong_core::pong::{GameState, Game};
 use pong_core::framebuffer::FrameBuffer;
 use pong_core::display::Display;
 use pong_core::controller::{Controller, Direction};
@@ -23,14 +22,18 @@ use controller::DefaultController;
 fn main() {
     println!("Hello, world!");
 
-    let mut frame_buffer = FrameBuffer::new(640, 360);
+    let frame_buffer = FrameBuffer::new(640, 360);
     let mut renderer = Renderer::new();
     let mut display = DefaultDisplay::new("Game", 640, 360, frame_buffer);
 
-    let mut controller_a = DefaultController::new(display.window.clone(), Key::Up, Key::Down);
-    let mut controller_b = DefaultController::new(display.window.clone(), Key::W, Key::S);
+    let mut controller_a = DefaultController::new(display.window.clone(), Key::W, Key::S);
+    let mut controller_b = DefaultController::new(display.window.clone(), Key::Up, Key::Down);
 
     let mut game_state = GameState::new();
+    let game = Game::new();
+
+    let mut t = 0.0;
+    let mut u = 0.0;
 
     let mut start = Instant::now();
     while display.window.borrow().is_open() && !display.window.borrow().is_key_down(Key::Escape) {
@@ -40,7 +43,11 @@ fn main() {
         let t_delta = start.elapsed();
         let t_delta = (t_delta.as_secs() * 1000) as f32 + (t_delta.subsec_nanos() / 1000000) as f32;
         start = Instant::now();
-        game_state.update(dir_a, dir_b, t_delta / 2.0);
+        let q = Game::update(game_state, dir_a, dir_b, 0.1);
+        //game_state = q.0;
+        game_state = q;
+        //println!("{}, {}", q.1, q.2);
+
         renderer.render(&game_state, &mut display);
         display.show();
 

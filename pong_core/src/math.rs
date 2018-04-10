@@ -1,4 +1,4 @@
-use core::ops::{Add, Mul};
+use core::ops::{Add, Sub, Mul};
 
 #[derive(Debug, Copy, Clone)]
 pub struct Vector<T> {
@@ -17,7 +17,18 @@ impl<T> Add for Vector<T> where T:Add {
     }
 }
 
-impl<T> Mul for Vector<T> where T:Mul{
+impl<T> Sub for Vector<T> where T:Sub {
+    type Output = Vector<T::Output>;
+
+    fn sub(self, rhs: Vector<T>) -> Vector<T::Output> {
+        Vector{
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+        }
+    }
+}
+
+impl<T> Mul for Vector<T> where T:Mul {
     type Output = Vector<T::Output>;
 
     fn mul(self, rhs: Vector<T>) -> Vector<T::Output> {
@@ -46,4 +57,8 @@ pub fn clamp<T: PartialOrd>(input: T, min: T, max: T) -> T {
     } else {
         input
     }
+}
+
+pub fn cross_product(a: Vector<f32>, b: Vector<f32>) -> f32 {
+    a.x * b.y - a.y * b.x
 }

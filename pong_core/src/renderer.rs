@@ -16,22 +16,30 @@ impl<'a> Renderer {
     }
 
     pub fn render(&mut self, state: &GameState, display: &mut Display) {
-        let a = Circle {
+        let ball = Circle {
             position: Vector::from(state.ball.position),
             diameter: 30
         };
 
 
-        let b = Rectangle {
-            curr: Vector{
-                x: 100,
-                y: 100,
-            } ,
+        let paddle_1 = Rectangle {
+            position: Vector::from(state.paddle_1.position),
+            height: state.paddle_1.height as i32,
+            width: state.paddle_1.width as i32,
+
+        };
+
+        let paddle_2 = Rectangle {
+            position: Vector::from(state.paddle_2.position),
+            height: state.paddle_2.height as i32,
+            width: state.paddle_2.width as i32,
+
         };
 
         let mut objects: LinkedList<&Drawable> = LinkedList::new();
-        objects.push_back(&a);
-        objects.push_back(&b);
+        objects.push_back(&ball);
+        objects.push_back(&paddle_1);
+        objects.push_back(&paddle_2);
 
         let mut points: LinkedList<Point> = LinkedList::new();
 
@@ -40,11 +48,11 @@ impl<'a> Renderer {
         }
 
         for p in &self.old_points {
-            display.set_pixel(p.x as usize, p.y as usize, 0x000000);   
+            display.set_pixel(p.position.x as usize, p.position.y as usize, 0x000000);
         }
 
         for p in &points {
-            display.set_pixel(p.x as usize, p.y as usize, 0xffffff);
+            display.set_pixel(p.position.x as usize, p.position.y as usize, 0xffffff);
         }
 
         self.old_points = points;
@@ -62,13 +70,14 @@ struct Circle {
 }
 
 struct Rectangle {
-    curr: Vector<i32>,
-//    size: Vector<i32>,
+    position: Vector<i32>,
+    height: i32,
+    width: i32,
 }
 
 struct Point {
-    x: i32,
-    y: i32,
+    position: Vector<i32>,
+    value: i32
 }
 
 
@@ -93,28 +102,36 @@ impl Drawable for Circle {
 
         while x >= y {
             list.push_back(Point {
-                x: x0 + x, y: y0 + y
+                position: Vector {x: x0 + x, y: y0 + y},
+                value: 0,
             });
             list.push_back(Point {
-                x: x0 + y, y: y0 + x
+                position: Vector {x: x0 + y, y: y0 + x},
+                value: 0,
             });
             list.push_back(Point {
-                x: x0 -y, y: y0 + x
+                position: Vector {x: x0 -y, y: y0 + x},
+                value: 0,
             });
             list.push_back(Point {
-                x: x0 -x, y: y0 + y
+                position: Vector {x: x0 -x, y: y0 + y},
+                value: 0,
             });
             list.push_back(Point {
-                x: x0 -x, y: y0 - y
+                position: Vector {x: x0 -x, y: y0 - y},
+                value: 0,
             });
             list.push_back(Point {
-                x: x0 -y, y: y0 - x
+                position: Vector {x: x0 -y, y: y0 - x},
+                value: 0,
             });
             list.push_back(Point {
-                x: x0 + y, y: y0 - x
+                position: Vector {x: x0 + y, y: y0 - x},
+                value: 0,
             });
             list.push_back(Point {
-                x: x0 + x, y: y0 - y
+                position: Vector {x: x0 + x, y: y0 - y},
+                value: 0,
             });
 
             if err <= 0 {
@@ -139,48 +156,49 @@ impl Drawable for Circle {
 impl Drawable for Rectangle {
 
     fn draw (&self) -> LinkedList<Point> {
-        let length_y = 90;
-        let length_x = 17;
-
-        let leftedgetop = Point { x: self.curr.x - (length_x / 2), y: self.curr.y + (length_y / 2) };
-        let rightedgebuttom = Point { x: self.curr.x + (length_x / 2), y: self.curr.y - (length_y / 2) };
-        let  leftedgebuttom =  Point{x : self.curr.x - (length_x/2), y : self.curr.y - (length_y/2)};
-        let  rightedgetop =   Point{x : self.curr.x + (length_x/2), y : self.curr.y + (length_y/2)};
+        let y = self.position.y;
+        let x = self.position.x;
+        let height = self.height / 2;
+        let width = self.width / 2;
 
         let mut list: LinkedList<Point> = LinkedList::new();
 
-        /*
-        for x_coordinate in leftedgetop.x..rightedgebuttom.x {
-            for y_coordinate in rightedgebuttom.y..leftedgetop.y{
-                let mut point = Point { x: x_coordinate, y: y_coordinate };
-                list.push_back(point);
-            }
-        }
-        */
-
-        // Code for rectanlge non-solid
-
-        for i in leftedgetop.x..=rightedgetop.x{
-            let mut point = Point { x : i , y : leftedgetop.y};
+        // Left Edge
+        for y in y-height..y+height {
+            let mut point = Point {
+                position: Vector {x: x - width, y},
+                value: 0xffffff,
+            };
             list.push_back(point);
         }
 
-        for i in leftedgebuttom.x..=rightedgebuttom.x{
-            let mut point = Point { x  :i , y : leftedgebuttom.y};
+        //Right Edge
+        for y in y-height..y+height {
+            let mut point = Point {
+                position: Vector {x: x + width, y},
+                value: 0xffffff,
+            };
             list.push_back(point);
         }
 
-        for i in leftedgebuttom.y..=leftedgetop.y{
-            let mut point = Point { x: leftedgetop.x , y: i};
+        //Top Edge
+        for x in x-width..x+width {
+            let mut point = Point {
+                position: Vector {x: x, y: y + height},
+                value: 0xffffff,
+            };
             list.push_back(point);
         }
 
-        for i in rightedgebuttom.y..=rightedgetop.y{
-            let mut point = Point { x: rightedgetop.x , y : i};
+        //Bottom Edge
+        for x in x-width..x+width {
+            let mut point = Point {
+                position: Vector {x: x, y: y - height},
+                value: 0xffffff,
+            };
             list.push_back(point);
         }
 
-
-    list
+        list
     }
 }
