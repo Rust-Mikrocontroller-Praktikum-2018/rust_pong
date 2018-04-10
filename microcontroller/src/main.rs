@@ -22,7 +22,7 @@ extern crate r0;
 // game related structs
 use pong_core::{pong, constants, renderer};
 use pong::{Game, GameState};
-use constants::LCD_WIDTH;
+use constants::{LCD_HEIGHT, LCD_WIDTH};
 use renderer::Renderer;
 
 // hardware register structs with accessor methods
@@ -130,7 +130,8 @@ fn main(hw: board::Hardware) -> ! {
     i2c_3.test_1();
     i2c_3.test_2();
 
-    let mut game_state = GameState::new(); 
+    let game = Game::new(LCD_WIDTH, LCD_HEIGHT);
+    let mut game_state = GameState::new(LCD_WIDTH, LCD_HEIGHT); 
     let mut display = DefaultDisplay::new(lcd);
     let mut renderer = Renderer::new();
 
@@ -155,7 +156,7 @@ fn main(hw: board::Hardware) -> ! {
             }
         }
 
-        game_state = Game::update(
+        game_state = game.update(
             game_state,
             player_1.get_direction(input_1),
             player_2.get_direction(input_2),
