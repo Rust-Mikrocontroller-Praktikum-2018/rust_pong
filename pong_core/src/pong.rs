@@ -13,6 +13,10 @@ trait Rectangle {
     fn width(&self) -> f32;
 }
 
+trait CollisionEffect {
+    fn on_collision(&self, new_state: GameState, old_state: GameState) -> GameState;
+}
+
 #[derive(Debug, Copy, Clone)]
 pub struct Ball {
     pub position: Vector<f32>,
@@ -34,6 +38,12 @@ impl Rectangle for Paddle {
 
     fn width(&self) -> f32 {
         self.height
+    }
+}
+
+impl CollisionEffect for Paddle {
+    fn on_collision(&self, new_state: GameState, old_state: GameState) -> GameState {
+        new_state
     }
 }
 
@@ -129,7 +139,7 @@ impl Game {
         (t, u)
     }
 
-    fn detect_collision_paddle(paddle_new: Paddle, paddle_old: Paddle, ball_new: Ball, ball_old: Ball) -> Option<(f32, f32)> {
+    fn detect_collision_paddle<'a>(paddle_new: &'a Paddle, paddle_old: Paddle, ball_new: Ball, ball_old: Ball) -> Option<(f32, f32, &'a CollisionEffect)> {
         let movement_ball = ball_old.direction;
         let movement_paddle = Vector {x: 0.0, y: paddle_old.height};
 
@@ -142,7 +152,7 @@ impl Game {
         let (t, u) = Self::intersect(position_paddle, movement_paddle, position_ball, movement_ball);
 
         if cross_product(movement_ball, movement_paddle) != 0.0 && 0.0 <= t && t <= 1.0 && 0.0 <= u && u <= 1.0 {
-            Some((t, u))
+            Some((t, u, paddle_new))
         } else {
             None
         }
@@ -150,17 +160,17 @@ impl Game {
     }
 
     fn detect_collision(new_state: GameState, old_state: GameState) -> GameState {
-        let mut collisions: LinkedList<Option<(f32, f32)>> = LinkedList::new();
+        let mut collisions: LinkedList<Option<(f32, f32, &CollisionEffect)>> = LinkedList::new();
 
         collisions.push_back(Self::detect_collision_paddle(
-            new_state.paddle_2,
+            &new_state.paddle_2,
             old_state.paddle_2,
             new_state.ball,
             old_state.ball,
         ));
 
         collisions.push_back(Self::detect_collision_paddle(
-            new_state.paddle_1,
+            &new_state.paddle_1,
             old_state.paddle_1,
             new_state.ball,
             old_state.ball,
@@ -169,11 +179,10 @@ impl Game {
         let mut new_state= new_state;
         for c in collisions {
             match c {
-                Some((t, u)) => {
-                    let mut dir = Vector {x: -1.0, y: 1.0};
-                    if t > 0.5 {
-                        dir = Vector {x: -1.0, y: -1.0};
-                    }
+                Some((t, u, effect)) => {
+                    //new_state = effect.on_collision(new_state, old_state);
+                    let dir = Vector {x: -1.0, y: 1.0};
+
                     new_state.ball.position = old_state.ball.position + old_state.ball.direction * Vector {x: u, y: u};
                     new_state.ball.direction = old_state.ball.direction * dir;
                     new_state.ball.position = new_state.ball.position + new_state.ball.direction * Vector {x: (2.0-u), y: (2.0-u)};
