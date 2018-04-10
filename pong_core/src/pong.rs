@@ -1,5 +1,8 @@
-use math::{clamp, cross_product, unit, Vector};
+use alloc::LinkedList;
 use core::cmp::{min, max};
+use core::option::{Option};
+
+use math::{clamp, cross_product, unit, Vector};
 use display::Display;
 use controller::Direction;
 
@@ -55,7 +58,7 @@ impl GameState {
     pub fn new() -> GameState {
         let ball = Ball {
             position: Vector { x: LCD_WIDTH / 2.0, y: LCD_HEIGHT / 2.0 },
-            direction: Vector { x: 1.0, y: 1.0 },
+            direction: Vector { x: 1.1, y: 1.1 },
             diameter: 25.0,
         };
 
@@ -126,35 +129,65 @@ impl Game {
         (t, u)
     }
 
-    fn detect_collision(mut new_state: GameState, old_state: GameState) -> (GameState, f32, f32) {
-        let movement_ball = new_state.ball.position - old_state.ball.position;
-        let movement_paddle = Vector {x: 0.0, y: new_state.paddle_2.height};
+    fn detect_collision_paddle(paddle_new: Paddle, paddle_old: Paddle, ball_new: Ball, ball_old: Ball) -> Option<(f32, f32)> {
+        let movement_ball = ball_old.direction;
+        let movement_paddle = Vector {x: 0.0, y: paddle_old.height};
 
-        let position_ball = old_state.ball.position;
+        let position_ball = ball_old.position;
         let position_paddle = Vector {
-            x: new_state.paddle_2.position.x - new_state.paddle_2.width/ 2.0,
-            y: new_state.paddle_2.position.y - new_state.paddle_2.height / 2.0,
+            x: paddle_old.position.x - paddle_old.width / 2.0,
+            y: paddle_old.position.y - paddle_old.height / 2.0,
         };
 
         let (t, u) = Self::intersect(position_paddle, movement_paddle, position_ball, movement_ball);
 
         if cross_product(movement_ball, movement_paddle) != 0.0 && 0.0 <= t && t <= 1.0 && 0.0 <= u && u <= 1.0 {
-            let mut dir = Vector {x: -1.0, y: 1.0};
-            /*
-            if t > 0.5 {
-                dir = Vector {x: -1.0, y: 1.0};
-            }
-            */
-            new_state.ball.position = old_state.ball.position + old_state.ball.direction * Vector {x: u, y: u};
-            new_state.ball.direction = old_state.ball.direction * dir;
-            new_state.ball.position = new_state.ball.position + new_state.ball.direction * Vector {x: (1.0-u), y: (1.0-u)};
+            Some((t, u))
+        } else {
+            None
         }
-
-        (new_state, t, u)
 
     }
 
-    pub fn update(mut game_state: GameState, action_1: Direction, action_2: Direction, t_delta: f32) -> (GameState, f32, f32) {
+    fn detect_collision(new_state: GameState, old_state: GameState) -> GameState {
+        let mut collisions: LinkedList<Option<(f32, f32)>> = LinkedList::new();
+
+        collisions.push_back(Self::detect_collision_paddle(
+            new_state.paddle_2,
+            old_state.paddle_2,
+            new_state.ball,
+            old_state.ball,
+        ));
+
+        collisions.push_back(Self::detect_collision_paddle(
+            new_state.paddle_1,
+            old_state.paddle_1,
+            new_state.ball,
+            old_state.ball,
+        ));
+
+        let mut new_state= new_state;
+        for c in collisions {
+            match c {
+                Some((t, u)) => {
+                    let mut dir = Vector {x: -1.0, y: 1.0};
+                    if t > 0.5 {
+                        dir = Vector {x: -1.0, y: -1.0};
+                    }
+                    new_state.ball.position = old_state.ball.position + old_state.ball.direction * Vector {x: u, y: u};
+                    new_state.ball.direction = old_state.ball.direction * dir;
+                    new_state.ball.position = new_state.ball.position + new_state.ball.direction * Vector {x: (2.0-u), y: (2.0-u)};
+
+                },
+                None => {}
+            }
+        }
+
+        new_state
+
+    }
+
+    pub fn update(mut game_state: GameState, action_1: Direction, action_2: Direction, t_delta: f32) -> GameState {
         let old_state = game_state;
 
         let action_1 = action_1 as i32 as f32;
