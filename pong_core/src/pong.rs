@@ -25,11 +25,31 @@ pub struct Ball {
     pub diameter: f32,
 }
 
+impl Ball {
+    fn default_ball(x: f32, y: f32) -> Ball {
+        Ball {
+            position: Vector { x: x, y: y },
+            direction: Vector { x: 0.9, y: -1.1 },
+            diameter: 25.0,
+        }
+    }
+}
+
 #[derive(Debug, Copy, Clone)]
 pub struct Paddle {
     pub position: Vector<f32>,
     pub height: f32,
     pub width: f32,
+}
+
+impl Paddle {
+    fn default_paddle(x: f32, y: f32) -> Paddle {
+        Paddle {
+            position: Vector { x: x, y: y },
+            width: 20.0,
+            height: 80.0,
+        }
+    }
 }
 
 pub struct Edge {
@@ -88,31 +108,18 @@ pub struct GameState {
 
 impl GameState {
     pub fn new(width: f32, height: f32) -> GameState {
-        let ball = Ball {
-            position: Vector { x: width / 2.0, y: height / 2.0 },
-            direction: Vector { x: 0.9, y: -1.1 },
-            diameter: 25.0,
-        };
-
-        let paddle_1 = Paddle {
-            position: Vector { x: PADDLE_OFFSET, y: height / 2.0 },
-            width: 20.0,
-            height: 80.0,
-        };
-        let paddle_2 = Paddle {
-            position: Vector { x: width - PADDLE_OFFSET, y: height / 2.0 },
-            width: 20.0,
-            height: 80.0,
-        };
-
         GameState {
-            ball: ball,
-            paddle_1: paddle_1,
-            paddle_2: paddle_2,
+            ball: Ball::default_ball(width / 2.0, height / 2.0),
+            paddle_1: Paddle::default_paddle(PADDLE_OFFSET, height / 2.0),
+            paddle_2: Paddle::default_paddle(width - PADDLE_OFFSET, height / 2.0),
             score_1: 0,
             score_2: 0,
             running: GameMode::NewGame,
         }
+    }
+
+    pub fn reset(&mut self, height: f32, width: f32) {
+        self.ball = Ball::default_ball(width / 2.0, height / 2.0);
     }
 }
 
@@ -149,9 +156,14 @@ impl Game {
     }
 
     fn crash(&self, mut game_state: GameState) -> GameState {
-        if game_state.ball.position.x >= self.width - game_state.ball.diameter - 1.0  || game_state.ball.position.x <= 0.0 + game_state.ball.diameter + 1.0 {
-            game_state.running = GameMode::GameOver;
-            game_state = GameState::new(self.width, self.height);
+        if game_state.ball.position.x >= self.width - game_state.ball.diameter - 1.0 {
+            game_state.score_1 = game_state.score_1 + 1;
+            game_state.reset(self.height, self.width);
+        } 
+
+        if game_state.ball.position.x <= game_state.ball.diameter + 1.0 {
+            game_state.score_2 = game_state.score_2 + 1;
+            game_state.reset(self.height, self.width);
         }
 
         game_state
