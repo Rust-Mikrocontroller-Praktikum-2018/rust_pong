@@ -127,10 +127,10 @@ impl Game {
     }
 
     fn reflect(mut game_state: GameState) -> GameState {
-        if game_state.ball.position.y >= LCD_HEIGHT - 25.0 {
+        if game_state.ball.position.y >= LCD_HEIGHT - game_state.ball.diameter - 1.0 {
             game_state.ball.direction.y *= -1.0;
         }
-        if game_state.ball.position.y <= 0.0 + 25.0 {
+        if game_state.ball.position.y <= 0.0 + game_state.ball.diameter - 1.0 {
             game_state.ball.direction.y *= -1.0;
         }
 
@@ -138,7 +138,7 @@ impl Game {
     }
 
     fn crash(mut game_state: GameState) -> GameState {
-        if game_state.ball.position.x >= LCD_WIDTH - 25.0 || game_state.ball.position.x <= 0.0 + 25.0 {
+        if game_state.ball.position.x >= LCD_WIDTH - game_state.ball.diameter - 1.0  || game_state.ball.position.x <= 0.0 + game_state.ball.diameter + 1.0 {
             game_state.running = GameMode::GameOver;
             game_state = GameState::new();
         }

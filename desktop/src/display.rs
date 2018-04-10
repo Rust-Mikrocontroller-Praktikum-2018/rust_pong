@@ -39,6 +39,6 @@ impl Display for DefaultDisplay {
     }
 
     fn show_score(&mut self, score_1: usize, score_2: usize, hex_color: u32) {
-        
+
     }
 }
