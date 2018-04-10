@@ -7,7 +7,7 @@ use math::{clamp, cross_product, dot_product, unit, length, Vector};
 use display::Display;
 use controller::Direction;
 
-use constants::{PADDLE_OFFSET, PADDLE_HEIGHT, PADDLE_SPEED, LCD_HEIGHT, LCD_WIDTH};
+use constants::{PADDLE_OFFSET, PADDLE_HEIGHT, PADDLE_SPEED};
 
 trait Rectangle {
     fn height(&self) -> f32;
@@ -79,20 +79,20 @@ pub struct GameState {
 }
 
 impl GameState {
-    pub fn new() -> GameState {
+    pub fn new(width: f32, height: f32) -> GameState {
         let ball = Ball {
-            position: Vector { x: LCD_WIDTH / 2.0, y: LCD_HEIGHT / 2.0 },
+            position: Vector { x: width / 2.0, y: height / 2.0 },
             direction: Vector { x: 0.9, y: -1.1 },
             diameter: 25.0,
         };
 
         let paddle_1 = Paddle {
-            position: Vector { x: PADDLE_OFFSET, y: LCD_HEIGHT / 2.0 },
+            position: Vector { x: PADDLE_OFFSET, y: height / 2.0 },
             width: 20.0,
             height: 80.0,
         };
         let paddle_2 = Paddle {
-            position: Vector { x: LCD_WIDTH - PADDLE_OFFSET, y: LCD_HEIGHT / 2.0 },
+            position: Vector { x: width - PADDLE_OFFSET, y: height / 2.0 },
             width: 20.0,
             height: 80.0,
         };
@@ -108,15 +108,18 @@ impl GameState {
     }
 }
 
-pub struct Game {}
+pub struct Game {
+    width: f32,
+    height: f32
+}
 
 impl Game {
-    pub fn new() -> Self {
-        Game {}
+    pub fn new(width: f32, height: f32) -> Self {
+        Game {width, height}
     }
 
-    fn clamp_paddle(paddle: &mut Paddle) {
-        paddle.position.y = clamp(paddle.position.y, PADDLE_HEIGHT / 2.0, LCD_HEIGHT - PADDLE_HEIGHT / 2.0);
+    fn clamp_paddle(&self, paddle: &mut Paddle) {
+        paddle.position.y = clamp(paddle.position.y, PADDLE_HEIGHT / 2.0, self.height - PADDLE_HEIGHT / 2.0);
     }
 
     fn clamp_vector<T: PartialOrd>(vector: Vector<T>, min: Vector<T>, max: Vector<T>) -> Vector<T> {
@@ -126,8 +129,8 @@ impl Game {
         }
     }
 
-    fn reflect(mut game_state: GameState) -> GameState {
-        if game_state.ball.position.y >= LCD_HEIGHT - game_state.ball.diameter - 1.0 {
+    fn reflect(&self, mut game_state: GameState) -> GameState {
+        if game_state.ball.position.y >= self.height - game_state.ball.diameter - 1.0 {
             game_state.ball.direction.y *= -1.0;
         }
         if game_state.ball.position.y <= 0.0 + game_state.ball.diameter - 1.0 {
@@ -137,10 +140,10 @@ impl Game {
         game_state
     }
 
-    fn crash(mut game_state: GameState) -> GameState {
-        if game_state.ball.position.x >= LCD_WIDTH - game_state.ball.diameter - 1.0  || game_state.ball.position.x <= 0.0 + game_state.ball.diameter + 1.0 {
+    fn crash(&self, mut game_state: GameState) -> GameState {
+        if game_state.ball.position.x >= self.width - game_state.ball.diameter - 1.0  || game_state.ball.position.x <= 0.0 + game_state.ball.diameter + 1.0 {
             game_state.running = GameMode::GameOver;
-            game_state = GameState::new();
+            game_state = GameState::new(self.width, self.height);
         }
 
         game_state
@@ -254,7 +257,7 @@ impl Game {
         new_state
     }
 
-    pub fn update(mut game_state: GameState, action_1: Direction, action_2: Direction, t_delta: f32) -> GameState {
+    pub fn update(&self, mut game_state: GameState, action_1: Direction, action_2: Direction, t_delta: f32) -> GameState {
         let old_state = game_state;
 
         let action_1 = action_1 as i32 as f32;
@@ -264,8 +267,8 @@ impl Game {
         game_state.paddle_1.position.y += distance * action_1;
         game_state.paddle_2.position.y += distance * action_2;
 
-        Self::clamp_paddle(&mut game_state.paddle_1);
-        Self::clamp_paddle(&mut game_state.paddle_2);
+        Self::clamp_paddle(self,&mut game_state.paddle_1);
+        Self::clamp_paddle(self,&mut game_state.paddle_2);
 
         /*
         let new_ball_position = Self::clamp_vector(
@@ -279,8 +282,8 @@ impl Game {
         let new_ball_position = game_state.ball.position + game_state.ball.direction * Vector { x: t_delta, y: t_delta };
         game_state.ball.position = new_ball_position;
 
-        let game_state = Self::reflect(game_state);
-        let game_state = Self::crash(game_state);
+        let game_state = self.reflect(game_state);
+        let game_state = self.crash(game_state);
         let game_state = Self::detect_collision(game_state, old_state);
 
         game_state

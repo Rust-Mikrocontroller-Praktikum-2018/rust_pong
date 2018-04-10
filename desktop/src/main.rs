@@ -30,8 +30,8 @@ fn main() {
     let mut controller_a = DefaultController::new(display.window.clone(), Key::W, Key::S);
     let mut controller_b = DefaultController::new(display.window.clone(), Key::Up, Key::Down);
 
-    let mut game_state = GameState::new();
-    let game = Game::new();
+    let mut game_state = GameState::new(640.0, 360.0);
+    let game = Game::new(640.0, 360.0);
 
     let mut t = 0.0;
     let mut u = 0.0;
@@ -44,9 +44,7 @@ fn main() {
         let t_delta = start.elapsed();
         let t_delta = (t_delta.as_secs() * 1000) as f32 + (t_delta.subsec_nanos() / 1000000) as f32;
         start = Instant::now();
-        game_state = Game::update(game_state, dir_a, dir_b, 0.5);
-
-        println!("{:?}", game_state);
+        game_state = game.update(game_state, dir_a, dir_b, t_delta / 5.0);
 
         renderer.render(&game_state, &mut display);
         display.show();
