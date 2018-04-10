@@ -64,6 +64,7 @@ impl<'a> Renderer {
             display.set_pixel(p.position.x as usize, p.position.y as usize, 0xffffff);
         }
 
+        display.show_score(state.score_1, state.score_2, 0xffffff);
         self.old_points = new_points;
     }
 }

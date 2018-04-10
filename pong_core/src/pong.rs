@@ -252,7 +252,6 @@ impl Game {
         }
 
         new_state
-
     }
 
     pub fn update(mut game_state: GameState, action_1: Direction, action_2: Direction, t_delta: f32) -> GameState {
