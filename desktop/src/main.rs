@@ -45,7 +45,7 @@ fn main() {
         let t_delta = (t_delta.as_secs() * 1000) as f32 + (t_delta.subsec_nanos() / 1000000) as f32;
         start = Instant::now();
         game_state = game.update(game_state, dir_a, dir_b, t_delta / 5.0);
-
+        println!("{:?}", game_state);
         renderer.render(&game_state, &mut display);
         display.show();
 

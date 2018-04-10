@@ -3,7 +3,7 @@ use alloc::boxed::Box;
 use core::cmp::{min, max};
 use core::option::{Option};
 
-use math::{clamp, cross_product, dot_product, unit, length, Vector};
+use math::{clamp, cross_product, dot_product, unit, length, signum, Vector};
 use display::Display;
 use controller::Direction;
 
@@ -37,13 +37,21 @@ pub struct Edge {
     pub direction: Vector<f32>,
 }
 
-impl Rectangle for Paddle {
-    fn height(&self) -> f32 {
-        self.height
-    }
+pub struct DirectionalEdge {
+    pub position: Vector<f32>,
+    pub direction: Vector<f32>,
+}
 
-    fn width(&self) -> f32 {
-        self.height
+impl CollisionEffect for DirectionalEdge {
+    fn on_collision(&self, mut new_state: GameState, old_state: GameState, t: f32, u: f32) -> GameState {
+        let n = unit(Vector {x: self.direction.y, y: -self.direction.x}); // + Vector::new((u - 0.5) / 0.5) * self.direction;
+        let d = Vector::new((t-0.5) / 0.5) * unit(self.direction);
+
+        new_state.ball.position = old_state.ball.position + Vector::new(u) * old_state.ball.direction;
+        new_state.ball.direction = unit(n*signum(old_state.ball.direction)*Vector::new(-1.0) + d) * Vector::new(length(old_state.ball.direction));
+        new_state.ball.position = new_state.ball.position + Vector::new(10.0 - u) * new_state.ball.direction;
+
+        new_state
     }
 }
 
@@ -156,8 +164,8 @@ impl Game {
         (t, u)
     }
 
-    fn get_edges(paddle: Paddle) -> LinkedList<Edge> {
-        let left_edge = Edge {
+    fn get_edges(paddle: Paddle) -> LinkedList<DirectionalEdge> {
+        let left_edge = DirectionalEdge {
             position: Vector {
                 x: paddle.position.x - paddle.width / 2.0,
                 y: paddle.position.y - paddle.height / 2.0,
@@ -167,7 +175,7 @@ impl Game {
             }
         };
 
-        let right_edge = Edge {
+        let right_edge = DirectionalEdge {
             position: Vector {
                 x: paddle.position.x + paddle.width / 2.0,
                 y: paddle.position.y - paddle.height / 2.0,
@@ -177,7 +185,7 @@ impl Game {
             }
         };
 
-        let top_edge = Edge {
+        let top_edge = DirectionalEdge {
             position: Vector {
                 x: paddle.position.x - paddle.width / 2.0,
                 y: paddle.position.y - paddle.height / 2.0,
@@ -187,7 +195,7 @@ impl Game {
             }
         };
 
-        let bottom_edge = Edge {
+        let bottom_edge = DirectionalEdge {
             position: Vector {
                 x: paddle.position.x - paddle.width / 2.0,
                 y: paddle.position.y + paddle.height / 2.0,
@@ -197,9 +205,7 @@ impl Game {
             }
         };
 
-
-
-        let mut edges: LinkedList<Edge> = LinkedList::new();
+        let mut edges: LinkedList<DirectionalEdge> = LinkedList::new();
         edges.push_back(left_edge);
         edges.push_back(right_edge);
         edges.push_back(top_edge);

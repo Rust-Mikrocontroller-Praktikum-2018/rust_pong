@@ -106,6 +106,13 @@ pub fn unit(a: Vector<f32>) -> Vector<f32> {
     a / Vector::new(length)
 }
 
+pub fn signum(a: Vector<f32>) -> Vector<f32> {
+    Vector {
+        x: if a.x > 0.0 {1.0} else {-1.0},
+        y: if a.y > 0.0 {1.0} else {-1.0},
+    }
+}
+
 // https://github.com/emkw/rust-fast_inv_sqrt/blob/master/src/lib.rs
 pub trait InvSqrt32 {
     fn inv_sqrt32(self) -> f32;
