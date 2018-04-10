@@ -9,6 +9,15 @@ pub struct Vector<T> {
     pub y: T,
 }
 
+impl<T: Copy> Vector<T> {
+    pub fn new(value: T) -> Vector<T> {
+        Vector {
+            x: value,
+            y: value,
+        }
+    }
+}
+
 impl<T: PartialEq> PartialEq for Vector<T> {
     fn eq(&self, other: &Vector<T>) -> bool {
         self.x == other.x && self.y == other.y

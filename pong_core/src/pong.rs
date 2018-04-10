@@ -1,4 +1,5 @@
-use alloc::LinkedList;
+use alloc::{LinkedList};
+use alloc::boxed::Box;
 use core::cmp::{min, max};
 use core::option::{Option};
 
@@ -14,7 +15,7 @@ trait Rectangle {
 }
 
 trait CollisionEffect {
-    fn on_collision(&self, new_state: GameState, old_state: GameState) -> GameState;
+    fn on_collision(&self, new_state: GameState, old_state: GameState, t: f32, u: f32) -> GameState;
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -31,6 +32,11 @@ pub struct Paddle {
     pub width: f32,
 }
 
+pub struct Edge {
+    pub position: Vector<f32>,
+    pub direction: Vector<f32>,
+}
+
 impl Rectangle for Paddle {
     fn height(&self) -> f32 {
         self.height
@@ -41,8 +47,16 @@ impl Rectangle for Paddle {
     }
 }
 
-impl CollisionEffect for Paddle {
-    fn on_collision(&self, new_state: GameState, old_state: GameState) -> GameState {
+impl CollisionEffect for Edge {
+    fn on_collision(&self, mut new_state: GameState, old_state: GameState, t: f32, u: f32) -> GameState {
+        let d = old_state.ball.direction;
+        let n = Vector {x: self.direction.y, y: -self.direction.x}; // + Vector::new((u - 0.5) / 0.5) * self.direction;
+
+        new_state.ball.position = old_state.ball.position + old_state.ball.direction * Vector {x: u, y: u};
+        // Reflect ball
+        new_state.ball.direction = d - Vector::new(2.0) * (Vector::new(cross_product(d, n)) * n);
+        new_state.ball.position = new_state.ball.position + new_state.ball.direction * Vector {x: (1.0-u), y: (1.0-u)};
+
         new_state
     }
 }
@@ -139,42 +153,93 @@ impl Game {
         (t, u)
     }
 
-    fn detect_collision_paddle<'a>(paddle_new: &'a Paddle, paddle_old: Paddle, ball_new: Ball, ball_old: Ball) -> Option<(f32, f32, &'a CollisionEffect)> {
-        let movement_ball = ball_old.direction;
-        let movement_paddle = Vector {x: 0.0, y: paddle_old.height};
-
-        let position_ball = ball_old.position;
-        let position_paddle = Vector {
-            x: paddle_old.position.x - paddle_old.width / 2.0,
-            y: paddle_old.position.y - paddle_old.height / 2.0,
+    fn get_edges(paddle: Paddle) -> LinkedList<Edge> {
+        let left_edge = Edge {
+            position: Vector {
+                x: paddle.position.x - paddle.width / 2.0,
+                y: paddle.position.y - paddle.height / 2.0,
+            },
+            direction: Vector {
+                x: 0.0, y: paddle.height
+            }
         };
 
-        let (t, u) = Self::intersect(position_paddle, movement_paddle, position_ball, movement_ball);
+        let right_edge = Edge {
+            position: Vector {
+                x: paddle.position.x + paddle.width / 2.0,
+                y: paddle.position.y - paddle.height / 2.0,
+            },
+            direction: Vector {
+                x: 0.0, y: paddle.height
+            }
+        };
 
-        if cross_product(movement_ball, movement_paddle) != 0.0 && 0.0 <= t && t <= 1.0 && 0.0 <= u && u <= 1.0 {
-            Some((t, u, paddle_new))
-        } else {
-            None
+        let top_edge = Edge {
+            position: Vector {
+                x: paddle.position.x - paddle.width / 2.0,
+                y: paddle.position.y - paddle.height / 2.0,
+            },
+            direction: Vector {
+                x: paddle.width, y: 0.0
+            }
+        };
+
+        let bottom_edge = Edge {
+            position: Vector {
+                x: paddle.position.x - paddle.width / 2.0,
+                y: paddle.position.y + paddle.height / 2.0,
+            },
+            direction: Vector {
+                x: paddle.width, y: 0.0
+            }
+        };
+
+
+
+        let mut edges: LinkedList<Edge> = LinkedList::new();
+        edges.push_back(left_edge);
+        edges.push_back(right_edge);
+        edges.push_back(top_edge);
+        edges.push_back(bottom_edge);
+
+        edges
+    }
+
+    fn detect_collision_paddle(paddle_new: &Paddle, paddle_old: Paddle, ball_new: Ball, ball_old: Ball) -> LinkedList<Option<(f32, f32, Box<CollisionEffect>)>> {
+        let edges = Self::get_edges(paddle_old);
+        let mut collisions: LinkedList<Option<(f32, f32, Box<CollisionEffect>)>> = LinkedList::new();
+
+        for e in edges {
+            let (t, u) = Self::intersect(e.position, e.direction, ball_old.position, ball_old.direction);
+
+            if cross_product(ball_old.direction, e.direction) != 0.0 && 0.0 <= t && t <= 1.0 && 0.0 <= u && u <= 1.0 {
+                collisions.push_back(Some((t, u, Box::new(e))));
+            } else {
+                collisions.push_back(None);
+            }
         }
+
+        collisions
 
     }
 
     fn detect_collision(new_state: GameState, old_state: GameState) -> GameState {
-        let mut collisions: LinkedList<Option<(f32, f32, &CollisionEffect)>> = LinkedList::new();
-
-        collisions.push_back(Self::detect_collision_paddle(
-            &new_state.paddle_2,
-            old_state.paddle_2,
-            new_state.ball,
-            old_state.ball,
-        ));
-
-        collisions.push_back(Self::detect_collision_paddle(
+        let mut collisions: LinkedList<Option<(f32, f32, Box<CollisionEffect>)>> = LinkedList::new();
+        let mut paddle_1_collisions = Self::detect_collision_paddle(
             &new_state.paddle_1,
             old_state.paddle_1,
             new_state.ball,
             old_state.ball,
-        ));
+        );
+        let mut paddle_2_collisions = Self::detect_collision_paddle(
+            &new_state.paddle_2,
+            old_state.paddle_2,
+            new_state.ball,
+            old_state.ball,
+        );
+
+        collisions.append(&mut paddle_1_collisions);
+        collisions.append(&mut paddle_2_collisions);
 
         let mut new_state= new_state;
         for c in collisions {
