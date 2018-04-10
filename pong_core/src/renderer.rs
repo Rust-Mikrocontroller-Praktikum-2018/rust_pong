@@ -57,11 +57,11 @@ impl<'a> Renderer {
         let points_to_draw: Vec<_> = new_points.difference(&self.old_points).cloned().collect();
 
         for p in points_to_remove {
-            display.set_pixel(p.x as usize, p.y as usize, 0x000000);   
+            display.set_pixel(p.position.x as usize, p.position.y as usize, 0x000000);
         }
 
         for p in points_to_draw {
-            display.set_pixel(p.x as usize, p.y as usize, 0xffffff);
+            display.set_pixel(p.position.x as usize, p.position.y as usize, 0xffffff);
         }
 
         self.old_points = new_points;
@@ -84,27 +84,20 @@ struct Rectangle {
     width: i32,
 }
 
-#[derive(Eq)]
-#[derive(Copy)]
+#[derive(Debug, Eq, Copy, Clone)]
 struct Point {
     position: Vector<i32>,
     value: i32
 }
 
-impl Clone for Point {
-    fn clone(&self) -> Point { 
-        Point{x: self.x.clone(), y: self.y.clone()}
-    }
-}
-
 impl Ord for Point {
     fn cmp(&self, other: &Point) -> Ordering {
-        if self.x < other.x {
+        if self.position.x < other.position.x {
             Ordering::Less
-        } else if self.x > other.x {
+        } else if self.position.x > other.position.x {
             Ordering::Greater
         } else {
-            self.y.cmp(&other.y)
+            self.position.y.cmp(&other.position.y)
         }
     }
 }
@@ -117,7 +110,7 @@ impl PartialOrd for Point {
 
 impl PartialEq for Point {
     fn eq(&self, other: &Point) -> bool {
-        self.x == other.x && self.y == other.y
+        self.position.x == other.position.x && self.position.y == other.position.y
     }
 }
 

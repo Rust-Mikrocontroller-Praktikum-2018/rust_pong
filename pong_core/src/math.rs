@@ -3,10 +3,16 @@ use core::mem;
 use core::{f32, f64};
 
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Eq, Copy, Clone)]
 pub struct Vector<T> {
     pub x: T,
     pub y: T,
+}
+
+impl<T: PartialEq> PartialEq for Vector<T> {
+    fn eq(&self, other: &Vector<T>) -> bool {
+        self.x == other.x && self.y == other.y
+    }
 }
 
 impl<T> Add for Vector<T> where T:Add {
