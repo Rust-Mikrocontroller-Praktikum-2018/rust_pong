@@ -125,6 +125,7 @@ fn main(hw: board::Hardware) -> ! {
     layer_1.clear();
     layer_2.clear();
     lcd::init_stdout(layer_2);
+    lcd.set_background_color(lcd::Color::from_hex(0x000000));
 
     // i2c
     i2c::init_pins_and_clocks(rcc, &mut gpio);
@@ -134,13 +135,11 @@ fn main(hw: board::Hardware) -> ! {
 
     let mut game_state = pong::GameState::new(); 
     let mut display = DefaultDisplay::new(lcd);
-
     let mut renderer = Renderer::new();
-    renderer.render(&game_state, &mut display);
 
     loop {
         renderer.render(&game_state, &mut display);
-        game_state.update(Direction::None, Direction::None, 10.0);
+        game_state.update(Direction::None, Direction::None, 5.0);
     }
 
 

@@ -3,15 +3,18 @@ use alloc::LinkedList;
 use framebuffer::FrameBuffer;
 use pong::GameState;
 use display::Display;
+use alloc::btree_set::BTreeSet;
+use alloc::vec::Vec;
+use core::cmp::Ordering;
 
 pub struct Renderer {
-    old_points: LinkedList<Point>
+    old_points: BTreeSet<Point>
 }
 
 impl<'a> Renderer {
     pub fn new() -> Self {
         Renderer {
-            old_points: LinkedList::new()
+            old_points: BTreeSet::new()
         }
     }
 
@@ -41,21 +44,27 @@ impl<'a> Renderer {
         objects.push_back(&paddle_1);
         objects.push_back(&paddle_2);
 
-        let mut points: LinkedList<Point> = LinkedList::new();
-
+       
+        let mut new_points = BTreeSet::new();
         for o in objects {
-            points.append(&mut o.draw());
+            let mut points: LinkedList<Point> = o.draw();
+            for p in points {
+                new_points.insert(p);
+            }
+        }
+        
+        let points_to_remove: Vec<_> = self.old_points.difference(&new_points).cloned().collect();
+        let points_to_draw: Vec<_> = new_points.difference(&self.old_points).cloned().collect();
+
+        for p in points_to_remove {
+            display.set_pixel(p.x as usize, p.y as usize, 0x000000);   
         }
 
-        for p in &self.old_points {
-            display.set_pixel(p.position.x as usize, p.position.y as usize, 0x000000);
+        for p in points_to_draw {
+            display.set_pixel(p.x as usize, p.y as usize, 0xffffff);
         }
 
-        for p in &points {
-            display.set_pixel(p.position.x as usize, p.position.y as usize, 0xffffff);
-        }
-
-        self.old_points = points;
+        self.old_points = new_points;
     }
 }
 
@@ -75,16 +84,46 @@ struct Rectangle {
     width: i32,
 }
 
+#[derive(Eq)]
+#[derive(Copy)]
 struct Point {
     position: Vector<i32>,
     value: i32
 }
 
+impl Clone for Point {
+    fn clone(&self) -> Point { 
+        Point{x: self.x.clone(), y: self.y.clone()}
+    }
+}
+
+impl Ord for Point {
+    fn cmp(&self, other: &Point) -> Ordering {
+        if self.x < other.x {
+            Ordering::Less
+        } else if self.x > other.x {
+            Ordering::Greater
+        } else {
+            self.y.cmp(&other.y)
+        }
+    }
+}
+
+impl PartialOrd for Point {
+    fn partial_cmp(&self, other: &Point) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl PartialEq for Point {
+    fn eq(&self, other: &Point) -> bool {
+        self.x == other.x && self.y == other.y
+    }
+}
 
 fn quadrat (value: i32) -> i32 {
     value*value
 }
-
 
 
 impl Drawable for Circle {
@@ -149,9 +188,6 @@ impl Drawable for Circle {
         list
     }
 }
-
-
-
 
 impl Drawable for Rectangle {
 
