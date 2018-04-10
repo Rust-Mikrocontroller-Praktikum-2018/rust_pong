@@ -3,7 +3,7 @@ use alloc::boxed::Box;
 use core::cmp::{min, max};
 use core::option::{Option};
 
-use math::{clamp, cross_product, unit, length, Vector};
+use math::{clamp, cross_product, dot_product, unit, length, Vector};
 use display::Display;
 use controller::Direction;
 
@@ -49,13 +49,13 @@ impl Rectangle for Paddle {
 
 impl CollisionEffect for Edge {
     fn on_collision(&self, mut new_state: GameState, old_state: GameState, t: f32, u: f32) -> GameState {
-        let d = unit(old_state.ball.direction);
-        let n = unit(Vector {x: self.direction.y, y: -self.direction.x}); // + Vector::new((u - 0.5) / 0.5) * self.direction;
-
         new_state.ball.position = old_state.ball.position + old_state.ball.direction * Vector {x: u, y: u};
         // Reflect ball
-        new_state.ball.direction = Vector::new(length(new_state.ball.direction)) * unit(d - Vector::new(2.0) * (Vector::new(cross_product(d, n)) * n));
-        new_state.ball.position = new_state.ball.position + new_state.ball.direction * Vector {x: (1.0-u), y: (1.0-u)};
+        let d = new_state.ball.direction;
+        let n = unit(Vector {x: self.direction.y, y: -self.direction.x}); // + Vector::new((u - 0.5) / 0.5) * self.direction;
+
+        new_state.ball.direction = Vector::new(length(d)) * unit(d - Vector::new(2.0) * (Vector::new(dot_product(d, n)) * n));
+        new_state.ball.position = new_state.ball.position + new_state.ball.direction * Vector {x: (3.0-u), y: (3.0-u)};
 
         new_state
     }
@@ -82,7 +82,7 @@ impl GameState {
     pub fn new() -> GameState {
         let ball = Ball {
             position: Vector { x: LCD_WIDTH / 2.0, y: LCD_HEIGHT / 2.0 },
-            direction: Vector { x: 1.1, y: 1.1 },
+            direction: Vector { x: 0.9, y: -1.1 },
             diameter: 25.0,
         };
 

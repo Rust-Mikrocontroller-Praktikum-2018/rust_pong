@@ -88,6 +88,11 @@ pub fn clamp<T: PartialOrd>(input: T, min: T, max: T) -> T {
     }
 }
 
+pub fn dot_product(a: Vector<f32>, b: Vector<f32>) -> f32 {
+    a.x * b.x + a.y * b.y
+}
+
+
 pub fn cross_product(a: Vector<f32>, b: Vector<f32>) -> f32 {
     a.x * b.y - a.y * b.x
 }
@@ -97,8 +102,8 @@ pub fn length(a: Vector<f32>) -> f32 {
 }
 
 pub fn unit(a: Vector<f32>) -> Vector<f32> {
-    let length = (a.x*a.x + a.y*a.y).inv_sqrt32();
-    a * Vector {x: length, y: length}
+    let length = length(a);
+    a / Vector::new(length)
 }
 
 // https://github.com/emkw/rust-fast_inv_sqrt/blob/master/src/lib.rs
