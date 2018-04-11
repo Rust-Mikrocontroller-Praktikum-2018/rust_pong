@@ -6,11 +6,13 @@ extern crate pong_core;
 
 mod display;
 mod controller;
+mod debug;
 
 use minifb::{Key, WindowOptions, Window};
 use rand::{Rng, thread_rng};
 use std::time::Instant;
 
+use pong_core::debug::Debugger;
 use pong_core::math::{Vector, unit, InvSqrt32};
 use pong_core::pong::{GameState, Game};
 use pong_core::framebuffer::FrameBuffer;
@@ -19,9 +21,11 @@ use pong_core::controller::{Controller, Direction};
 use pong_core::renderer::Renderer;
 use display::DefaultDisplay;
 use controller::DefaultController;
+use debug::DefaultDebugger;
 
 fn main() {
     println!("Hello, world!");
+    let debugger = DefaultDebugger {};
 
     let frame_buffer = FrameBuffer::new(640, 360);
     let mut renderer = Renderer::new();
@@ -45,7 +49,7 @@ fn main() {
         let t_delta = (t_delta.as_secs() * 1000) as f32 + (t_delta.subsec_nanos() / 1000000) as f32;
         start = Instant::now();
         game_state = game.update(game_state, dir_a, dir_b, t_delta / 5.0);
-        println!("{:?}", game_state);
+        //println!("{:?}", game_state);
         renderer.render(&game_state, &mut display);
         display.show();
 

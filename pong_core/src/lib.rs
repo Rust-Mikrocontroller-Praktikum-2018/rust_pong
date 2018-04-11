@@ -2,8 +2,10 @@
 #![feature(alloc)]
 #![feature(inclusive_range_syntax)]
 
+
 extern crate alloc;
 
+pub mod debug;
 pub mod pong;
 pub mod framebuffer;
 pub mod display;

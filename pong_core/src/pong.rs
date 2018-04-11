@@ -70,7 +70,7 @@ impl CollisionEffect for DirectionalEdge {
 
         new_state.ball.position = old_state.ball.position + Vector::new(u) * old_state.ball.direction;
         new_state.ball.direction = unit(n*signum(old_state.ball.direction)*Vector::new(-1.0) + d) * Vector::new(length(old_state.ball.direction));
-        new_state.ball.position = new_state.ball.position + Vector::new(10.0 - u) * new_state.ball.direction;
+        new_state.ball.position = new_state.ball.position + Vector::new(1.0 - u) * new_state.ball.direction;
 
         new_state
     }
@@ -78,13 +78,14 @@ impl CollisionEffect for DirectionalEdge {
 
 impl CollisionEffect for Edge {
     fn on_collision(&self, mut new_state: GameState, old_state: GameState, t: f32, u: f32) -> GameState {
+        let m = new_state;
         new_state.ball.position = old_state.ball.position + old_state.ball.direction * Vector {x: u, y: u};
         // Reflect ball
         let d = new_state.ball.direction;
-        let n = unit(Vector {x: self.direction.y, y: -self.direction.x}); // + Vector::new((u - 0.5) / 0.5) * self.direction;
+        let n = unit(Vector {x: self.direction.y, y: -self.direction.x});
 
         new_state.ball.direction = Vector::new(length(d)) * unit(d - Vector::new(2.0) * (Vector::new(dot_product(d, n)) * n));
-        new_state.ball.position = new_state.ball.position + new_state.ball.direction * Vector {x: (3.0-u), y: (3.0-u)};
+        new_state.ball.position = new_state.ball.position + new_state.ball.direction * Vector {x: (1.0-u), y: (1.0-u)};
 
         new_state
     }
@@ -161,7 +162,7 @@ impl Game {
 
     fn intersect(p: Vector<f32>, r: Vector<f32>, q: Vector<f32>, s: Vector<f32>) -> (f32, f32) {
         let t = cross_product((q - p), s) / cross_product(r, s);
-        let u = cross_product((q - p), r) / cross_product(s, r);
+        let u = cross_product((q - p), r) / cross_product(r, s);
 
         (t, u)
     }
@@ -313,7 +314,7 @@ impl Game {
             for c in list.iter() {
                 match c {
                     &Some((t, u, effect)) => {
-                        new_state = effect.on_collision(new_state, old_state, t, u);
+                            new_state = effect.on_collision(new_state, old_state, t, u);
                     },
                     &None => {}
                 }
@@ -346,15 +347,6 @@ impl Game {
 
         Self::clamp_paddle(self,&mut game_state.paddle_1);
         Self::clamp_paddle(self,&mut game_state.paddle_2);
-
-        /*
-        let new_ball_position = Self::clamp_vector(
-            self.ball.position + self.ball.direction,
-            Vector {x: 15.0, y: 15.0},
-            Vector {x: LCD_WIDTH - 15.0, y: LCD_HEIGHT - 15.0}
-        );
-
-        */
 
         let new_ball_position = game_state.ball.position + game_state.ball.direction * Vector { x: t_delta, y: t_delta };
         game_state.ball.position = new_ball_position;
