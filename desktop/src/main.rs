@@ -51,7 +51,7 @@ fn main() {
         renderer.render(&game_state, &mut display);
         display.show();
 
-        let ten_millis = time::Duration::from_millis(100);
+        let ten_millis = time::Duration::from_millis(10);
         let now = time::Instant::now();
 
         thread::sleep(ten_millis);
