@@ -1,4 +1,3 @@
-use alloc::{LinkedList};
 use alloc::boxed::Box;
 use core::cmp::{min, max};
 use core::option::{Option};
@@ -52,11 +51,13 @@ impl Paddle {
     }
 }
 
+#[derive(Debug, Copy, Clone)]
 pub struct Edge {
     pub position: Vector<f32>,
     pub direction: Vector<f32>,
 }
 
+#[derive(Debug, Copy, Clone)]
 pub struct DirectionalEdge {
     pub position: Vector<f32>,
     pub direction: Vector<f32>,
@@ -165,7 +166,7 @@ impl Game {
         (t, u)
     }
 
-    fn get_edges_for_border(&self) -> LinkedList<Edge> {
+    fn get_edges_for_border(&self) -> [Edge; 2] {
         let padding = 25.0;
         let top_edge = Edge {
             position: Vector {
@@ -187,14 +188,16 @@ impl Game {
             }
         };
 
-        let mut edges: LinkedList<Edge> = LinkedList::new();
-        edges.push_back(top_edge);
-        edges.push_back(bottom_edge);
+
+        let mut edges = [
+            top_edge,
+            bottom_edge,
+        ];
 
         edges
     }
 
-    fn get_edges_for_paddle(paddle: Paddle) -> LinkedList<DirectionalEdge> {
+    fn get_edges_for_paddle(paddle: Paddle) -> [DirectionalEdge; 4] {
         let left_edge = DirectionalEdge {
             position: Vector {
                 x: paddle.position.x - paddle.width / 2.0,
@@ -235,26 +238,27 @@ impl Game {
             }
         };
 
-        let mut edges: LinkedList<DirectionalEdge> = LinkedList::new();
-        edges.push_back(left_edge);
-        edges.push_back(right_edge);
-        edges.push_back(top_edge);
-        edges.push_back(bottom_edge);
+        let mut edges = [
+            left_edge,
+            right_edge,
+            top_edge,
+            bottom_edge,
+        ];
 
         edges
     }
 
-    fn detect_collision_paddle(&self, paddle_new: &Paddle, paddle_old: Paddle, ball_new: Ball, ball_old: Ball) -> LinkedList<Option<(f32, f32, Box<CollisionEffect>)>> {
+    fn detect_collision_paddle(&self, paddle_new: &Paddle, paddle_old: Paddle, ball_new: Ball, ball_old: Ball) -> [Option<(f32, f32, DirectionalEdge)>; 4] {
         let edges = Self::get_edges_for_paddle(paddle_old);
-        let mut collisions: LinkedList<Option<(f32, f32, Box<CollisionEffect>)>> = LinkedList::new();
+        let mut collisions: [Option<(f32, f32, DirectionalEdge)>; 4] = [None; 4];
 
-        for e in edges {
+        for i in 0..4 {
+            let e = edges[i];
             let (t, u) = Self::intersect(e.position, e.direction, ball_old.position, ball_old.direction);
-
             if cross_product(ball_old.direction, e.direction) != 0.0 && 0.0 <= t && t <= 1.0 && 0.0 <= u && u <= 1.0 {
-                collisions.push_back(Some((t, u, Box::new(e))));
+                collisions[i] = Some((t, u, e));
             } else {
-                collisions.push_back(None);
+                collisions[i] = None;
             }
         }
 
@@ -262,17 +266,17 @@ impl Game {
 
     }
 
-    fn detect_collision_border(&self, ball_new: Ball, ball_old: Ball) -> LinkedList<Option<(f32, f32, Box<CollisionEffect>)>> {
+    fn detect_collision_border(&self, ball_new: Ball, ball_old: Ball) -> [Option<(f32, f32, Edge)>; 2] {
         let edges = self.get_edges_for_border();
-        let mut collisions: LinkedList<Option<(f32, f32, Box<CollisionEffect>)>> = LinkedList::new();
+        let mut collisions: [Option<(f32, f32, Edge)>; 2] = [None; 2];
 
-        for e in edges {
+        for i in 0..2 {
+            let e = edges[i];
             let (t, u) = Self::intersect(e.position, e.direction, ball_old.position, ball_old.direction);
-
             if cross_product(ball_old.direction, e.direction) != 0.0 && 0.0 <= t && t <= 1.0 && 0.0 <= u && u <= 1.0 {
-                collisions.push_back(Some((t, u, Box::new(e))));
+                collisions[i] = Some((t, u, e));
             } else {
-                collisions.push_back(None);
+                collisions[i] = None;
             }
         }
 
@@ -281,7 +285,6 @@ impl Game {
     }
 
     fn detect_collision(&self, new_state: GameState, old_state: GameState) -> GameState {
-        let mut collisions: LinkedList<Option<(f32, f32, Box<CollisionEffect>)>> = LinkedList::new();
         let mut paddle_1_collisions = self.detect_collision_paddle(
             &new_state.paddle_1,
             old_state.paddle_1,
@@ -300,17 +303,31 @@ impl Game {
             old_state.ball,
         );
 
-        collisions.append(&mut paddle_1_collisions);
-        collisions.append(&mut paddle_2_collisions);
-        collisions.append(&mut border_collisions);
 
         let mut new_state= new_state;
-        for c in collisions {
-            match c {
-                Some((t, u, effect)) => {
-                    new_state = effect.on_collision(new_state, old_state, t, u);
-                },
-                None => {}
+
+        let paddle_collisions: [[Option<(f32, f32, DirectionalEdge)>; 4]; 2] = [paddle_1_collisions, paddle_2_collisions];
+        let border_collisions: [[Option<(f32, f32, Edge)>; 2]; 1] = [border_collisions];
+
+        for list in paddle_collisions.iter() {
+            for c in list.iter() {
+                match c {
+                    &Some((t, u, effect)) => {
+                        new_state = effect.on_collision(new_state, old_state, t, u);
+                    },
+                    &None => {}
+                }
+            }
+        }
+
+        for list in border_collisions.iter() {
+            for c in list.iter() {
+                match c {
+                    &Some((t, u, effect)) => {
+                        new_state = effect.on_collision(new_state, old_state, t, u);
+                    },
+                    &None => {}
+                }
             }
         }
 
