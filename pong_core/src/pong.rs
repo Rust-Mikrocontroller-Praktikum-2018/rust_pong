@@ -29,7 +29,7 @@ impl Ball {
     fn default_ball(x: f32, y: f32) -> Ball {
         Ball {
             position: Vector { x: x, y: y },
-            direction: Vector { x: 0.9, y: -1.1 },
+            direction: Vector { x: 0.9, y: 1.1 },
             diameter: 25.0,
         }
     }
@@ -144,17 +144,6 @@ impl Game {
         }
     }
 
-    fn reflect(&self, mut game_state: GameState) -> GameState {
-        if game_state.ball.position.y >= self.height - game_state.ball.diameter - 1.0 {
-            game_state.ball.direction.y *= -1.0;
-        }
-        if game_state.ball.position.y <= 0.0 + game_state.ball.diameter - 1.0 {
-            game_state.ball.direction.y *= -1.0;
-        }
-
-        game_state
-    }
-
     fn crash(&self, mut game_state: GameState) -> GameState {
         if game_state.ball.position.x >= self.width - game_state.ball.diameter - 1.0 {
             game_state.score_1 = game_state.score_1 + 1;
@@ -176,7 +165,36 @@ impl Game {
         (t, u)
     }
 
-    fn get_edges(paddle: Paddle) -> LinkedList<DirectionalEdge> {
+    fn get_edges_for_border(&self) -> LinkedList<Edge> {
+        let padding = 25.0;
+        let top_edge = Edge {
+            position: Vector {
+                x: 0.0,
+                y: padding,
+            },
+            direction: Vector {
+                x: self.width, y: 0.0
+            }
+        };
+
+        let bottom_edge = Edge {
+            position: Vector {
+                x: 0.0,
+                y: self.height - padding,
+            },
+            direction: Vector {
+                x: self.width, y: 0.0
+            }
+        };
+
+        let mut edges: LinkedList<Edge> = LinkedList::new();
+        edges.push_back(top_edge);
+        edges.push_back(bottom_edge);
+
+        edges
+    }
+
+    fn get_edges_for_paddle(paddle: Paddle) -> LinkedList<DirectionalEdge> {
         let left_edge = DirectionalEdge {
             position: Vector {
                 x: paddle.position.x - paddle.width / 2.0,
@@ -226,8 +244,8 @@ impl Game {
         edges
     }
 
-    fn detect_collision_paddle(paddle_new: &Paddle, paddle_old: Paddle, ball_new: Ball, ball_old: Ball) -> LinkedList<Option<(f32, f32, Box<CollisionEffect>)>> {
-        let edges = Self::get_edges(paddle_old);
+    fn detect_collision_paddle(&self, paddle_new: &Paddle, paddle_old: Paddle, ball_new: Ball, ball_old: Ball) -> LinkedList<Option<(f32, f32, Box<CollisionEffect>)>> {
+        let edges = Self::get_edges_for_paddle(paddle_old);
         let mut collisions: LinkedList<Option<(f32, f32, Box<CollisionEffect>)>> = LinkedList::new();
 
         for e in edges {
@@ -244,23 +262,47 @@ impl Game {
 
     }
 
-    fn detect_collision(new_state: GameState, old_state: GameState) -> GameState {
+    fn detect_collision_border(&self, ball_new: Ball, ball_old: Ball) -> LinkedList<Option<(f32, f32, Box<CollisionEffect>)>> {
+        let edges = self.get_edges_for_border();
         let mut collisions: LinkedList<Option<(f32, f32, Box<CollisionEffect>)>> = LinkedList::new();
-        let mut paddle_1_collisions = Self::detect_collision_paddle(
+
+        for e in edges {
+            let (t, u) = Self::intersect(e.position, e.direction, ball_old.position, ball_old.direction);
+
+            if cross_product(ball_old.direction, e.direction) != 0.0 && 0.0 <= t && t <= 1.0 && 0.0 <= u && u <= 1.0 {
+                collisions.push_back(Some((t, u, Box::new(e))));
+            } else {
+                collisions.push_back(None);
+            }
+        }
+
+        collisions
+
+    }
+
+    fn detect_collision(&self, new_state: GameState, old_state: GameState) -> GameState {
+        let mut collisions: LinkedList<Option<(f32, f32, Box<CollisionEffect>)>> = LinkedList::new();
+        let mut paddle_1_collisions = self.detect_collision_paddle(
             &new_state.paddle_1,
             old_state.paddle_1,
             new_state.ball,
             old_state.ball,
         );
-        let mut paddle_2_collisions = Self::detect_collision_paddle(
+        let mut paddle_2_collisions = self.detect_collision_paddle(
             &new_state.paddle_2,
             old_state.paddle_2,
             new_state.ball,
             old_state.ball,
         );
 
+        let mut border_collisions = self.detect_collision_border(
+            new_state.ball,
+            old_state.ball,
+        );
+
         collisions.append(&mut paddle_1_collisions);
         collisions.append(&mut paddle_2_collisions);
+        collisions.append(&mut border_collisions);
 
         let mut new_state= new_state;
         for c in collisions {
@@ -300,9 +342,8 @@ impl Game {
         let new_ball_position = game_state.ball.position + game_state.ball.direction * Vector { x: t_delta, y: t_delta };
         game_state.ball.position = new_ball_position;
 
-        let game_state = self.reflect(game_state);
         let game_state = self.crash(game_state);
-        let game_state = Self::detect_collision(game_state, old_state);
+        let game_state = self.detect_collision(game_state, old_state);
 
         game_state
 
