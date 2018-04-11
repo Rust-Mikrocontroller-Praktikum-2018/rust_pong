@@ -69,7 +69,7 @@ impl CollisionEffect for DirectionalEdge {
         let d = Vector::new((t-0.5) / 0.5) * unit(self.direction);
 
         new_state.ball.position = old_state.ball.position + Vector::new(u) * old_state.ball.direction;
-        new_state.ball.direction = unit(n*signum(old_state.ball.direction)*Vector::new(-1.0) + d) * Vector::new(length(old_state.ball.direction));
+        new_state.ball.direction = unit(n*signum(old_state.ball.direction)*Vector::new(-1.0) + d) * Vector::new(length(old_state.ball.direction) * 1.05);
         new_state.ball.position = new_state.ball.position + Vector::new(1.0 - u) * new_state.ball.direction;
 
         new_state
