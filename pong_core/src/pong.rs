@@ -2,7 +2,7 @@ use alloc::boxed::Box;
 use core::cmp::{min, max};
 use core::option::{Option};
 
-use math::{clamp, cross_product, dot_product, unit, length, signum, Vector};
+use math::{clamp, cross_product, dot_product, unit, length, signum, abs, Vector};
 use display::Display;
 use controller::Direction;
 
@@ -28,7 +28,7 @@ impl Ball {
     fn default_ball(x: f32, y: f32) -> Ball {
         Ball {
             position: Vector { x: x, y: y },
-            direction: Vector { x: 0.9, y: 1.1 },
+            direction: Vector { x: 0.9, y: -1.1 },
             diameter: 25.0,
         }
     }
@@ -65,7 +65,7 @@ pub struct DirectionalEdge {
 
 impl CollisionEffect for DirectionalEdge {
     fn on_collision(&self, mut new_state: GameState, old_state: GameState, t: f32, u: f32) -> GameState {
-        let n = unit(Vector {x: self.direction.y, y: -self.direction.x}); // + Vector::new((u - 0.5) / 0.5) * self.direction;
+        let n = unit(abs(Vector {x: self.direction.y, y: -self.direction.x})); // + Vector::new((u - 0.5) / 0.5) * self.direction;
         let d = Vector::new((t-0.5) / 0.5) * unit(self.direction);
 
         new_state.ball.position = old_state.ball.position + Vector::new(u) * old_state.ball.direction;
@@ -314,7 +314,7 @@ impl Game {
             for c in list.iter() {
                 match c {
                     &Some((t, u, effect)) => {
-                            new_state = effect.on_collision(new_state, old_state, t, u);
+                        new_state = effect.on_collision(new_state, old_state, t, u);
                     },
                     &None => {}
                 }
