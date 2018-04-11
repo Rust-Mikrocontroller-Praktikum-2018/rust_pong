@@ -253,9 +253,11 @@ impl Game {
         let edges = Self::get_edges_for_paddle(paddle_old);
         let mut collisions: [Option<(f32, f32, DirectionalEdge)>; 4] = [None; 4];
 
+        let ball_movement = ball_new.position - ball_old.position;
+
         for i in 0..4 {
             let e = edges[i];
-            let (t, u) = Self::intersect(e.position, e.direction, ball_old.position, ball_old.direction);
+            let (t, u) = Self::intersect(e.position, e.direction, ball_old.position, ball_movement);
             if cross_product(ball_old.direction, e.direction) != 0.0 && 0.0 <= t && t <= 1.0 && 0.0 <= u && u <= 1.0 {
                 collisions[i] = Some((t, u, e));
             } else {
@@ -271,9 +273,11 @@ impl Game {
         let edges = self.get_edges_for_border();
         let mut collisions: [Option<(f32, f32, Edge)>; 2] = [None; 2];
 
+        let ball_movement = ball_new.position - ball_old.position;
+
         for i in 0..2 {
             let e = edges[i];
-            let (t, u) = Self::intersect(e.position, e.direction, ball_old.position, ball_old.direction);
+            let (t, u) = Self::intersect(e.position, e.direction, ball_old.position, ball_movement);
             if cross_product(ball_old.direction, e.direction) != 0.0 && 0.0 <= t && t <= 1.0 && 0.0 <= u && u <= 1.0 {
                 collisions[i] = Some((t, u, e));
             } else {

@@ -7,9 +7,10 @@ extern crate pong_core;
 mod display;
 mod controller;
 
+use std::time::Instant;
+use std::{thread, time};
 use minifb::{Key, WindowOptions, Window};
 use rand::{Rng, thread_rng};
-use std::time::Instant;
 
 use pong_core::math::{Vector, unit, InvSqrt32};
 use pong_core::pong::{GameState, Game};
@@ -41,11 +42,19 @@ fn main() {
 
         let t_delta = start.elapsed();
         let t_delta = (t_delta.as_secs() * 1000) as f32 + (t_delta.subsec_nanos() / 1000000) as f32;
+        let t_delta = t_delta / 10.0;
+        println!("t_delta: {}", t_delta);
         start = Instant::now();
-        game_state = game.update(game_state, dir_a, dir_b, t_delta / 5.0);
+
+        game_state = game.update(game_state, dir_a, dir_b, t_delta);
         //println!("{:?}", game_state);
         renderer.render(&game_state, &mut display);
         display.show();
+
+        let ten_millis = time::Duration::from_millis(100);
+        let now = time::Instant::now();
+
+        thread::sleep(ten_millis);
 
     }
 }
