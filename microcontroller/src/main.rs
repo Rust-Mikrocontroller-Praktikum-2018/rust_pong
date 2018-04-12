@@ -8,11 +8,13 @@
 
 mod player;
 mod display;
+mod renderer;
 use player::PlayerState;
 use display::DefaultDisplay;
 
+#[macro_use]
 extern crate stm32f7_discovery as stm32f7;
-
+extern crate alloc;
 extern crate pong_core;
 
 // initialization routines for .data and .bss
@@ -20,7 +22,7 @@ extern crate compiler_builtins;
 extern crate r0;
 
 // game related structs
-use pong_core::{pong, constants, renderer};
+use pong_core::{pong, constants};
 use pong::{Game, GameState};
 use constants::{LCD_HEIGHT, LCD_WIDTH};
 use renderer::Renderer;
@@ -133,15 +135,18 @@ fn main(hw: board::Hardware) -> ! {
     let game = Game::new(LCD_WIDTH, LCD_HEIGHT);
     let mut game_state = GameState::new(LCD_WIDTH, LCD_HEIGHT); 
     let mut display = DefaultDisplay::new(lcd);
-    let mut renderer = Renderer::new();
+    let mut renderer = Renderer::new(   );
 
     let mut player_1 = PlayerState::new();
     let mut player_2 = PlayerState::new();
 
-    let t_delta: f32 = 20.0;
+    let mut t_start = system_clock::ticks();
 
     loop {
         renderer.render(&game_state, &mut display);
+        //hprintln!("Rendering time: {}", system_clock::ticks() - start);
+
+        let start = system_clock::ticks();
         let mut input_1 = player_1.y;
         let mut input_2 = player_2.y;
 
@@ -156,14 +161,20 @@ fn main(hw: board::Hardware) -> ! {
             }
         }
 
+        let t_now = system_clock::ticks();
+        let t_delta = t_now - t_start;
+        t_start = t_now;
         game_state = game.update(
             game_state,
             player_1.get_direction(input_1),
             player_2.get_direction(input_2),
-            t_delta
+            ((t_delta as f32) / (system_clock::get_frequency() / 1_000_000) as f32) * 10.0
         );
+
 
         player_1.update(&game_state.paddle_1);
         player_2.update(&game_state.paddle_2);
+
+        //hprintln!("Game time: {}", system_clock::ticks() - start);
     }
 }

@@ -11,10 +11,10 @@ pub struct Renderer {
     old_points: BTreeSet<Point>
 }
 
-impl<'a> Renderer {
+impl Renderer {
     pub fn new() -> Self {
         Renderer {
-            old_points: BTreeSet::new()
+            old_points: BTreeSet::new(),
         }
     }
 
@@ -39,20 +39,13 @@ impl<'a> Renderer {
 
         };
 
-        let mut objects: LinkedList<&Drawable> = LinkedList::new();
-        objects.push_back(&ball);
-        objects.push_back(&paddle_1);
-        objects.push_back(&paddle_2);
-
        
         let mut new_points = BTreeSet::new();
-        for o in objects {
-            let mut points: LinkedList<Point> = o.draw();
-            for p in points {
-                new_points.insert(p);
-            }
-        }
-        
+
+        ball.draw(&mut new_points);
+        paddle_1.draw(&mut new_points);
+        paddle_2.draw(&mut new_points);
+
         let points_to_remove: Vec<_> = self.old_points.difference(&new_points).cloned().collect();
         let points_to_draw: Vec<_> = new_points.difference(&self.old_points).cloned().collect();
 
@@ -71,7 +64,7 @@ impl<'a> Renderer {
 
 
 trait Drawable {
-    fn draw(&self) -> LinkedList<Point>;
+    fn draw(&self, set: &mut BTreeSet<Point>);
 }
 
 struct Circle {
@@ -121,8 +114,7 @@ fn quadrat (value: i32) -> i32 {
 
 
 impl Drawable for Circle {
-    fn draw(&self) -> LinkedList<Point> {
-        let mut list: LinkedList<Point> = LinkedList::new();
+    fn draw(&self, set: &mut BTreeSet<Point>) {
         let radius = self.diameter/2;
 
         let mut x = radius - 1;
@@ -134,35 +126,35 @@ impl Drawable for Circle {
         let y0 = self.position.y;
 
         while x >= y {
-            list.push_back(Point {
+            set.insert(Point {
                 position: Vector {x: x0 + x, y: y0 + y},
                 value: 0,
             });
-            list.push_back(Point {
+            set.insert(Point {
                 position: Vector {x: x0 + y, y: y0 + x},
                 value: 0,
             });
-            list.push_back(Point {
+            set.insert(Point {
                 position: Vector {x: x0 -y, y: y0 + x},
                 value: 0,
             });
-            list.push_back(Point {
+            set.insert(Point {
                 position: Vector {x: x0 -x, y: y0 + y},
                 value: 0,
             });
-            list.push_back(Point {
+            set.insert(Point {
                 position: Vector {x: x0 -x, y: y0 - y},
                 value: 0,
             });
-            list.push_back(Point {
+            set.insert(Point {
                 position: Vector {x: x0 -y, y: y0 - x},
                 value: 0,
             });
-            list.push_back(Point {
+            set.insert(Point {
                 position: Vector {x: x0 + y, y: y0 - x},
                 value: 0,
             });
-            list.push_back(Point {
+            set.insert(Point {
                 position: Vector {x: x0 + x, y: y0 - y},
                 value: 0,
             });
@@ -179,19 +171,16 @@ impl Drawable for Circle {
                 err += dx - self.diameter;
             }
         }
-        list
     }
 }
 
 impl Drawable for Rectangle {
 
-    fn draw (&self) -> LinkedList<Point> {
+    fn draw (&self, set: &mut BTreeSet<Point>) {
         let y = self.position.y;
         let x = self.position.x;
         let height = self.height / 2;
         let width = self.width / 2;
-
-        let mut list: LinkedList<Point> = LinkedList::new();
 
         // Left Edge
         for y in y-height..y+height {
@@ -199,7 +188,7 @@ impl Drawable for Rectangle {
                 position: Vector {x: x - width, y},
                 value: 0xffffff,
             };
-            list.push_back(point);
+            set.insert(point);
         }
 
         //Right Edge
@@ -208,7 +197,7 @@ impl Drawable for Rectangle {
                 position: Vector {x: x + width, y},
                 value: 0xffffff,
             };
-            list.push_back(point);
+            set.insert(point);
         }
 
         //Top Edge
@@ -217,7 +206,7 @@ impl Drawable for Rectangle {
                 position: Vector {x: x, y: y + height},
                 value: 0xffffff,
             };
-            list.push_back(point);
+            set.insert(point);
         }
 
         //Bottom Edge
@@ -226,9 +215,7 @@ impl Drawable for Rectangle {
                 position: Vector {x: x, y: y - height},
                 value: 0xffffff,
             };
-            list.push_back(point);
+            set.insert(point);
         }
-
-        list
     }
 }
