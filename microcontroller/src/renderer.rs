@@ -1,9 +1,8 @@
 use pong_core::math::Vector;
 use pong_core::framebuffer::FrameBuffer;
 use pong_core::pong::GameState;
-use pong_core::display::Display;
+use display::DefaultDisplay;
 use alloc::vec::Vec;
-use alloc::binary_heap::BinaryHeap;
 use core::cmp::Ordering;
 
 use stm32f7::{system_clock};
@@ -22,7 +21,7 @@ impl Renderer {
         }
     }
 
-    pub fn render(&mut self, state: &GameState, display: &mut Display) {
+    pub fn render(&mut self, state: &GameState, display: &mut DefaultDisplay) {
         let start_render = system_clock::ticks();
 
         let ball = Circle {
@@ -42,7 +41,6 @@ impl Renderer {
             position: Vector::from(state.paddle_2.position),
             height: state.paddle_2.height as i32,
             width: state.paddle_2.width as i32,
-
         };
 
        
@@ -54,6 +52,8 @@ impl Renderer {
         let start_draw_paddles= system_clock::ticks();
         paddle_1.draw(&mut new_points);
         paddle_2.draw(&mut new_points);
+        display.show_score(state.score_1, state.score_2, &mut new_points);
+
         //hprintln!("paddles.draw(): {}", system_clock::ticks() - start_draw_paddles);
 
 
@@ -78,7 +78,6 @@ impl Renderer {
         self.layer = !self.layer;
 
         //let start_show_score = system_clock::ticks();
-        //display.show_score(state.score_1, state.score_2, 0xffffff);
         //hprintln!("display.show_score(): {}", system_clock::ticks() - start_show_score);
 
         //hprintln!("render(): {}", system_clock::ticks() - start_render);
@@ -102,9 +101,9 @@ struct Rectangle {
 }
 
 #[derive(Debug, Eq, Copy, Clone)]
-struct Point {
-    position: Vector<i32>,
-    value: i32
+pub struct Point {
+    pub position: Vector<i32>,
+    pub value: i32
 }
 
 impl Ord for Point {
