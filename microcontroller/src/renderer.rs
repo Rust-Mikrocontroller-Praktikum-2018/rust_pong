@@ -8,35 +8,6 @@ use core::cmp::Ordering;
 use stm32f7::{system_clock};
 use stm32f7::lcd::{Color};
 
-const WIDTH: i32 = 480;
-
-pub struct PixelMarker {
-    pub marked_pixels: [usize; 4080],
-}
-
-impl PixelMarker {
-    pub fn new() -> PixelMarker {
-        PixelMarker {
-            marked_pixels: [0; 4080],
-        }
-    }
-
-    pub fn mark_pixel(&mut self, x: i32, y: i32) {
-        let idx = (x + WIDTH * y) as usize;
-        self.marked_pixels[idx / 32] |= 1 << (idx % 32); 
-    }
-
-    pub fn unmark_pixel(&mut self, x: i32, y: i32) {
-        let idx = (x + WIDTH * y) as usize;
-        self.marked_pixels[idx / 32] &= !(1 << (idx % 32)); 
-    }
-
-    pub fn is_pixel_marked(&mut self, x: i32, y: i32) -> bool {
-        let idx = (x + WIDTH * y) as usize;
-        (self.marked_pixels[idx / 32] & (1 << (idx % 32))) > 0
-    }
-}
-
 pub struct Renderer {
     old_points: Vec<Point>,
     layer: bool,
@@ -75,36 +46,12 @@ impl Renderer {
        
         let mut new_points = Vec::with_capacity(500);
 
-        let start_draw_ball = system_clock::ticks();
         ball.draw(&mut new_points);
-        //hprintln!("ball.draw(): {}", system_clock::ticks() - start_draw_ball);
-        let start_draw_paddles= system_clock::ticks();
         paddle_1.draw(&mut new_points);
         paddle_2.draw(&mut new_points);
-        display.show_score(state.score_1, state.score_2, &mut new_points);
+        //display.show_score(state.score_1, state.score_2, &mut new_points);
 
-        /*
-        //hprintln!("paddles.draw(): {}", system_clock::ticks() - start_draw_paddles);
 
-        for p in &new_points {
-            self.pixel_marker.mark_pixel(p.position.x, p.position.y);
-        }
-
-        for p in &self.old_points {
-            if !self.pixel_marker.is_pixel_marked(p.position.x, p.position.y) {
-                display.set_pixel_1(p.position.x as usize, p.position.y as usize, 0x000000);
-            } else {
-                self.pixel_marker.unmark_pixel(p.position.x, p.position.y);
-            }
-        }
-
-        for p in &new_points {
-            if self.pixel_marker.is_pixel_marked(p.position.x, p.position.y) {
-                display.set_pixel_1(p.position.x as usize, p.position.y as usize, 0xffffff);
-                self.pixel_marker.unmark_pixel(p.position.x, p.position.y);
-            }
-        }
-        */
         if self.layer {
             for p_new in new_points.iter() {
                 display.set_pixel_1(p_new.position.x as usize, p_new.position.y as usize, 0xffffff);
@@ -123,11 +70,6 @@ impl Renderer {
 
         self.old_points = new_points;
         self.layer = !self.layer;
-
-        //let start_show_score = system_clock::ticks();
-        //hprintln!("display.show_score(): {}", system_clock::ticks() - start_show_score);
-
-        //hprintln!("render(): {}", system_clock::ticks() - start_render);
     }
 }
 

@@ -4,6 +4,8 @@
 
 
 extern crate alloc;
+#[macro_use]
+extern crate stm32f7_discovery as stm32f7;
 
 pub mod debug;
 pub mod pong;

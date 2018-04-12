@@ -5,21 +5,18 @@ use pong_core::debug::Debugger;
 
 
 pub struct SemihostingDebugger {
-    enabled: bool
 }
 
 impl SemihostingDebugger {
-    pub fn new(enabled: bool) -> SemihostingDebugger {
-        SemihostingDebugger {enabled}
+    pub fn new() -> SemihostingDebugger {
+        SemihostingDebugger {}
     }
 }
 
 impl Debugger for SemihostingDebugger {
-    fn println(&self, fmt_args: Arguments) {
-        if self.enabled {
-            print(fmt_args);
-            print(format_args!("\n"));
-        }
+    fn println(fmt_args: Arguments) {
+        print(fmt_args);
+        print(format_args!("\n"));
     }
 }
 

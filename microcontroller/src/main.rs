@@ -135,8 +135,7 @@ fn main(hw: board::Hardware) -> ! {
     i2c_3.test_1();
     i2c_3.test_2();
 
-    let debugger = SemihostingDebugger::new(true);
-    let game = Game{width: LCD_WIDTH, height: LCD_HEIGHT, debugger: &debugger};
+    let game = Game{width: LCD_WIDTH, height: LCD_HEIGHT};
     let mut game_state = GameState::new(LCD_WIDTH, LCD_HEIGHT); 
     let mut display = DefaultDisplay::new(lcd);
     let mut renderer = Renderer::new(   );
@@ -149,7 +148,7 @@ fn main(hw: board::Hardware) -> ! {
     loop {
         let t_start_render = system_clock::ticks();
         renderer.render(&game_state, &mut display);
-        debugger.println(format_args!("renderer.render = {}", system_clock::ticks() - t_start_render));
+        //SemihostingDebugger::println(format_args!("renderer.render = {}", system_clock::ticks() - t_start_render));
 
         let mut input_1 = player_1.y;
         let mut input_2 = player_2.y;
@@ -174,9 +173,9 @@ fn main(hw: board::Hardware) -> ! {
             game_state,
             player_1.get_direction(input_1),
             player_2.get_direction(input_2),
-            ((t_delta as f32) / (system_clock::get_frequency() / 1_000_000) as f32) * 10.0
+            ((t_delta as f32) / (system_clock::get_frequency() / 1_000_000) as f32) * 15.0
         );
-        debugger.println(format_args!("game.update = {}", system_clock::ticks() - t_start_update));
+        //SemihostingDebugger::println(format_args!("game.update = {}", system_clock::ticks() - t_start_update));
 
         player_1.update(&game_state.paddle_1);
         player_2.update(&game_state.paddle_2);

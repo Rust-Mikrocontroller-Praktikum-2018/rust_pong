@@ -5,7 +5,7 @@ use core::option::{Option};
 use math::{clamp, cross_product, dot_product, unit, length, signum, abs, Vector};
 use display::Display;
 use controller::Direction;
-use debug::Debugger;
+use debug::{Debugger, SemihostingDebugger};
 
 use constants::{PADDLE_OFFSET, PADDLE_HEIGHT, PADDLE_SPEED};
 
@@ -53,7 +53,6 @@ trait CollisionEffect {
     fn on_collision(&self, new_state: GameState, old_state: GameState, t: f32, u: f32) -> GameState;
 }
 
-
 #[derive(Debug, Copy, Clone)]
 pub struct Edge {
     pub position: Vector<f32>,
@@ -68,12 +67,17 @@ pub struct DirectionalEdge {
 
 impl CollisionEffect for DirectionalEdge {
     fn on_collision(&self, mut new_state: GameState, old_state: GameState, t: f32, u: f32) -> GameState {
-        let n = unit(abs(Vector {x: self.direction.y, y: -self.direction.x})); // + Vector::new((u - 0.5) / 0.5) * self.direction;
+        SemihostingDebugger::println(format_args!("on_collision: {:?}", self));
+
+        let n = unit(abs(Vector {x: self.direction.y, y: -self.direction.x}));
         let d = Vector::new((t-0.5) / 0.5) * unit(self.direction);
 
-        new_state.ball.position = old_state.ball.position + Vector::new(u) * old_state.ball.direction;
+        new_state.ball.position = old_state.ball.position + Vector::new(0.0) * old_state.ball.direction;
         new_state.ball.direction = unit(n*signum(old_state.ball.direction)*Vector::new(-1.0) + d) * Vector::new(length(old_state.ball.direction) + 0.1);
         new_state.ball.position = new_state.ball.position + Vector::new(1.0 - u) * new_state.ball.direction;
+
+        SemihostingDebugger::println(format_args!("ball_old: {:?}, {:?}", old_state.ball.position, old_state.ball.direction));
+        SemihostingDebugger::println(format_args!("ball_new: {:?}, {:?}", new_state.ball.position, new_state.ball.direction));
 
         new_state
     }
@@ -81,14 +85,20 @@ impl CollisionEffect for DirectionalEdge {
 
 impl CollisionEffect for Edge {
     fn on_collision(&self, mut new_state: GameState, old_state: GameState, t: f32, u: f32) -> GameState {
+        SemihostingDebugger::println(format_args!("on_collision: {:?}", self));
         let m = new_state;
-        new_state.ball.position = old_state.ball.position + old_state.ball.direction * Vector {x: u, y: u};
+        new_state.ball.position = old_state.ball.position + old_state.ball.direction * Vector::new(0.0);
+        SemihostingDebugger::println(format_args!("new_state.ball.position: {:?}", new_state.ball.position));
         // Reflect ball
         let d = new_state.ball.direction;
         let n = unit(Vector {x: self.direction.y, y: -self.direction.x});
 
         new_state.ball.direction = Vector::new(length(d)) * unit(d - Vector::new(2.0) * (Vector::new(dot_product(d, n)) * n));
-        new_state.ball.position = new_state.ball.position + new_state.ball.direction * Vector {x: (1.0-u), y: (1.0-u)};
+        new_state.ball.position = new_state.ball.position + Vector::new(1.0 - u) * new_state.ball.direction;
+
+        SemihostingDebugger::println(format_args!("ball_old: {:?}, {:?}", old_state.ball.position, old_state.ball.direction));
+        SemihostingDebugger::println(format_args!("ball_new: {:?}, {:?}", new_state.ball.position, new_state.ball.direction));
+
 
         new_state
     }
@@ -128,13 +138,12 @@ impl GameState {
     }
 }
 
-pub struct Game<'a, D: 'a + Debugger> {
+pub struct Game {
     pub width: f32,
     pub height: f32,
-    pub debugger: &'a D,
 }
 
-impl<'a, D: 'a + Debugger> Game<'a, D> {
+impl Game {
     fn clamp_paddle(&self, paddle: &mut Paddle) {
         paddle.position.y = clamp(paddle.position.y, PADDLE_HEIGHT / 2.0, self.height - PADDLE_HEIGHT / 2.0);
     }
@@ -146,18 +155,19 @@ impl<'a, D: 'a + Debugger> Game<'a, D> {
         }
     }
 
-    fn crash(&self, mut game_state: GameState) -> GameState {
-        if game_state.ball.position.x >= self.width - game_state.ball.diameter - 1.0 {
+    fn crash(&self, mut game_state: GameState) -> (bool, GameState) {
+        let padding = 30.0;
+        if game_state.ball.position.x >= self.width - game_state.ball.diameter - padding {
             game_state.score_1 = game_state.score_1 + 1;
             game_state.reset(self.height, self.width);
-        } 
-
-        if game_state.ball.position.x <= game_state.ball.diameter + 1.0 {
+            (true, game_state)
+        } else if game_state.ball.position.x <= game_state.ball.diameter + padding {
             game_state.score_2 = game_state.score_2 + 1;
             game_state.reset(self.height, self.width);
+            (true, game_state)
+        } else {
+            (false, game_state)
         }
-
-        game_state
     }
 
     fn intersect(p: Vector<f32>, r: Vector<f32>, q: Vector<f32>, s: Vector<f32>) -> (f32, f32) {
@@ -355,11 +365,9 @@ impl<'a, D: 'a + Debugger> Game<'a, D> {
         let new_ball_position = game_state.ball.position + game_state.ball.direction * Vector { x: t_delta, y: t_delta };
         game_state.ball.position = new_ball_position;
 
-        let game_state = self.crash(game_state);
         let game_state = self.detect_collision(game_state, old_state);
+        let (crash, game_state) = self.crash(game_state);
 
         game_state
-
-        // Problem: Need to update y_pos in controller, but cqannot do it agnostically
     }
 }

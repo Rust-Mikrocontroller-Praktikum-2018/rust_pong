@@ -19,7 +19,7 @@ impl<'a> DefaultDisplay<'a> {
     pub fn new(display: Lcd) -> DefaultDisplay<'a> {
         DefaultDisplay{
             display: display,
-            font_renderer: FontRenderer::new(TTF, 10.0),
+            font_renderer: FontRenderer::new(TTF, 28.0),
         }
     }
 
