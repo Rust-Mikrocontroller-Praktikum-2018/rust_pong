@@ -4,17 +4,22 @@ use stm32f7::semi_hosting::print;
 use pong_core::debug::Debugger;
 
 
-pub struct SemihostingDebugger {}
+pub struct SemihostingDebugger {
+    enabled: bool
+}
 
 impl SemihostingDebugger {
-    pub fn new() -> SemihostingDebugger {
-        SemihostingDebugger {}
+    pub fn new(enabled: bool) -> SemihostingDebugger {
+        SemihostingDebugger {enabled}
     }
 }
 
 impl Debugger for SemihostingDebugger {
-    fn println(fmt_args: Arguments) {
-        //print(fmt_args);
+    fn println(&self, fmt_args: Arguments) {
+        if self.enabled {
+            print(fmt_args);
+            print(format_args!("\n"));
+        }
     }
 }
 

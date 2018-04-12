@@ -1,3 +1,5 @@
+use core::fmt::Arguments;
+
 pub trait Debugger {
-    fn alert(msg: &'static str);
+    fn println(&self, fmt_args: Arguments);
 }

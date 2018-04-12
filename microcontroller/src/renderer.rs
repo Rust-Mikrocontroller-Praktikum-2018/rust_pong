@@ -39,16 +39,14 @@ impl PixelMarker {
 
 pub struct Renderer {
     old_points: Vec<Point>,
-    pixel_marker: PixelMarker
-   // layer: bool,
+    layer: bool,
 }
 
 impl Renderer {
     pub fn new() -> Self {
         Renderer {
             old_points: Vec::with_capacity(100),
-            pixel_marker: PixelMarker::new(),
-       //     layer: true,
+            layer: true,
         }
     }
 
@@ -75,7 +73,7 @@ impl Renderer {
         };
 
        
-        let mut new_points = Vec::with_capacity(100);
+        let mut new_points = Vec::with_capacity(500);
 
         let start_draw_ball = system_clock::ticks();
         ball.draw(&mut new_points);
@@ -85,6 +83,7 @@ impl Renderer {
         paddle_2.draw(&mut new_points);
         display.show_score(state.score_1, state.score_2, &mut new_points);
 
+        /*
         //hprintln!("paddles.draw(): {}", system_clock::ticks() - start_draw_paddles);
 
         for p in &new_points {
@@ -105,8 +104,7 @@ impl Renderer {
                 self.pixel_marker.unmark_pixel(p.position.x, p.position.y);
             }
         }
-/*
-
+        */
         if self.layer {
             for p_new in new_points.iter() {
                 display.set_pixel_1(p_new.position.x as usize, p_new.position.y as usize, 0xffffff);
@@ -122,10 +120,9 @@ impl Renderer {
                 display.unset_pixel_1(p_old.position.x as usize, p_old.position.y as usize);
             }
         }
-*/
 
         self.old_points = new_points;
-        //self.layer = !self.layer;
+        self.layer = !self.layer;
 
         //let start_show_score = system_clock::ticks();
         //hprintln!("display.show_score(): {}", system_clock::ticks() - start_show_score);

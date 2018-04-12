@@ -5,16 +5,13 @@ use core::option::{Option};
 use math::{clamp, cross_product, dot_product, unit, length, signum, abs, Vector};
 use display::Display;
 use controller::Direction;
+use debug::Debugger;
 
 use constants::{PADDLE_OFFSET, PADDLE_HEIGHT, PADDLE_SPEED};
 
 trait Rectangle {
     fn height(&self) -> f32;
     fn width(&self) -> f32;
-}
-
-trait CollisionEffect {
-    fn on_collision(&self, new_state: GameState, old_state: GameState, t: f32, u: f32) -> GameState;
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -50,6 +47,12 @@ impl Paddle {
         }
     }
 }
+
+
+trait CollisionEffect {
+    fn on_collision(&self, new_state: GameState, old_state: GameState, t: f32, u: f32) -> GameState;
+}
+
 
 #[derive(Debug, Copy, Clone)]
 pub struct Edge {
@@ -125,16 +128,13 @@ impl GameState {
     }
 }
 
-pub struct Game {
-    width: f32,
-    height: f32
+pub struct Game<'a, D: 'a + Debugger> {
+    pub width: f32,
+    pub height: f32,
+    pub debugger: &'a D,
 }
 
-impl Game {
-    pub fn new(width: f32, height: f32) -> Self {
-        Game {width, height}
-    }
-
+impl<'a, D: 'a + Debugger> Game<'a, D> {
     fn clamp_paddle(&self, paddle: &mut Paddle) {
         paddle.position.y = clamp(paddle.position.y, PADDLE_HEIGHT / 2.0, self.height - PADDLE_HEIGHT / 2.0);
     }
