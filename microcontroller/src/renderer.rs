@@ -1,6 +1,6 @@
 use pong_core::math::Vector;
 use pong_core::framebuffer::FrameBuffer;
-use pong_core::pong::GameState;
+use pong_core::pong::{GameState, GameMode};
 use display::DefaultDisplay;
 use alloc::vec::Vec;
 use core::cmp::Ordering;
@@ -46,11 +46,13 @@ impl Renderer {
        
         let mut new_points = Vec::with_capacity(500);
 
-        ball.draw(&mut new_points);
         paddle_1.draw(&mut new_points);
         paddle_2.draw(&mut new_points);
-        //display.show_score(state.score_1, state.score_2, &mut new_points);
-
+        
+        match state.running { 
+            GameMode::NewGame => display.show_score(state.score_1, state.score_2, &mut new_points),
+            _ => ball.draw(&mut new_points),
+        }
 
         if self.layer {
             for p_new in new_points.iter() {

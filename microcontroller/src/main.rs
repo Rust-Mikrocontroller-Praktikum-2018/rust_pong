@@ -25,7 +25,7 @@ extern crate r0;
 
 // game related structs
 use pong_core::{pong, constants};
-use pong::{Game, GameState};
+use pong::{Game, GameState, GameMode};
 use pong_core::debug::Debugger;
 use constants::{LCD_HEIGHT, LCD_WIDTH};
 use renderer::Renderer;
@@ -138,7 +138,7 @@ fn main(hw: board::Hardware) -> ! {
     let game = Game{width: LCD_WIDTH, height: LCD_HEIGHT};
     let mut game_state = GameState::new(LCD_WIDTH, LCD_HEIGHT); 
     let mut display = DefaultDisplay::new(lcd);
-    let mut renderer = Renderer::new(   );
+    let mut renderer = Renderer::new();
 
     let mut player_1 = PlayerState::new();
     let mut player_2 = PlayerState::new();
@@ -146,9 +146,15 @@ fn main(hw: board::Hardware) -> ! {
     let mut t_start = system_clock::ticks();
 
     loop {
-        let t_start_render = system_clock::ticks();
         renderer.render(&game_state, &mut display);
-        //SemihostingDebugger::println(format_args!("renderer.render = {}", system_clock::ticks() - t_start_render));
+        match game_state.running {
+            GameMode::NewGame => {
+                game_state.running = GameMode::Running;
+                system_clock::wait(1000);
+                t_start = system_clock::ticks();
+            },
+            _ => {},
+        }
 
         let mut input_1 = player_1.y;
         let mut input_2 = player_2.y;
@@ -168,14 +174,12 @@ fn main(hw: board::Hardware) -> ! {
         let t_delta = t_now - t_start;
         t_start = t_now;
 
-        let t_start_update = system_clock::ticks();
         game_state = game.update(
             game_state,
             player_1.get_direction(input_1),
             player_2.get_direction(input_2),
             ((t_delta as f32) / (system_clock::get_frequency() / 1_000_000) as f32) * 15.0
         );
-        //SemihostingDebugger::println(format_args!("game.update = {}", system_clock::ticks() - t_start_update));
 
         player_1.update(&game_state.paddle_1);
         player_2.update(&game_state.paddle_2);

@@ -1,6 +1,6 @@
 extern crate alloc;
 
-use pong_core::constants::LCD_WIDTH;
+use pong_core::constants::{LCD_HEIGHT, LCD_WIDTH};
 use pong_core::math::Vector;
 use stm32f7::lcd::{Lcd, Color, FontRenderer};
 use display::alloc::string::{String, ToString};
@@ -19,7 +19,7 @@ impl<'a> DefaultDisplay<'a> {
     pub fn new(display: Lcd) -> DefaultDisplay<'a> {
         DefaultDisplay{
             display: display,
-            font_renderer: FontRenderer::new(TTF, 28.0),
+            font_renderer: FontRenderer::new(TTF, 35.0),
         }
     }
 
@@ -48,12 +48,13 @@ impl<'a> DefaultDisplay<'a> {
         let score_rep = &mut score_1.to_string();
         score_rep.push_str(" : ");
         score_rep.push_str(&score_2.to_string());
-        let offset = ((LCD_WIDTH as i32) / 2) - 30;
+        let offset_x = ((LCD_WIDTH as i32) / 2) - 35;
+        let offset_y = ((LCD_HEIGHT as i32) / 2) - 35;
 
         self.font_renderer.render(score_rep, |x, y, v| {
             if v > 0.8 {
                 points.push(Point {
-                    position: Vector {x: (x as i32) + offset, y: y as i32},
+                    position: Vector {x: (x as i32) + offset_x, y: (y as i32) + offset_y},
                     value: 0,
                 });
             }

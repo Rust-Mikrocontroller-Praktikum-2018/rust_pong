@@ -134,6 +134,7 @@ impl GameState {
     }
 
     pub fn reset(&mut self, height: f32, width: f32) {
+        self.running = GameMode::NewGame;
         self.ball = Ball::default_ball(width / 2.0, height / 2.0);
     }
 }
