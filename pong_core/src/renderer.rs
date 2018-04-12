@@ -1,24 +1,27 @@
 use math::Vector;
-use alloc::LinkedList;
 use framebuffer::FrameBuffer;
 use pong::GameState;
 use display::Display;
-use alloc::btree_set::BTreeSet;
 use alloc::vec::Vec;
+use alloc::binary_heap::BinaryHeap;
 use core::cmp::Ordering;
 
+
 pub struct Renderer {
-    old_points: BTreeSet<Point>
+    old_points: Vec<Point>,
+    layer: bool,
 }
 
 impl Renderer {
     pub fn new() -> Self {
         Renderer {
-            old_points: BTreeSet::new(),
+            old_points: Vec::with_capacity(100),
+            layer: true,
         }
     }
 
     pub fn render(&mut self, state: &GameState, display: &mut Display) {
+
         let ball = Circle {
             position: Vector::from(state.ball.position),
             diameter: state.ball.diameter as i32,
@@ -39,32 +42,40 @@ impl Renderer {
 
         };
 
-       
-        let mut new_points = BTreeSet::new();
+
+        let mut new_points = Vec::with_capacity(100);
 
         ball.draw(&mut new_points);
         paddle_1.draw(&mut new_points);
         paddle_2.draw(&mut new_points);
 
-        let points_to_remove: Vec<_> = self.old_points.difference(&new_points).cloned().collect();
-        let points_to_draw: Vec<_> = new_points.difference(&self.old_points).cloned().collect();
 
-        for p in points_to_remove {
-            display.set_pixel_1(p.position.x as usize, p.position.y as usize, 0x000000);
+        if self.layer {
+            for p_new in new_points.iter() {
+                display.set_pixel_1(p_new.position.x as usize, p_new.position.y as usize, 0xffffff);
+            }
+            for p_old in self.old_points.iter() {
+                display.unset_pixel_2(p_old.position.x as usize, p_old.position.y as usize);
+            }
+        } else {
+            for p_new in new_points.iter() {
+                display.set_pixel_2(p_new.position.x as usize, p_new.position.y as usize, 0xffffff);
+            }
+            for p_old in self.old_points.iter() {
+                display.unset_pixel_1(p_old.position.x as usize, p_old.position.y as usize);
+            }
         }
 
-        for p in points_to_draw {
-            display.set_pixel_1(p.position.x as usize, p.position.y as usize, 0xffffff);
-        }
 
-        display.show_score(state.score_1, state.score_2, 0xffffff);
         self.old_points = new_points;
+        self.layer = !self.layer;
+
     }
 }
 
 
 trait Drawable {
-    fn draw(&self, set: &mut BTreeSet<Point>);
+    fn draw(&self, set: &mut Vec<Point>);
 }
 
 struct Circle {
@@ -108,13 +119,9 @@ impl PartialEq for Point {
     }
 }
 
-fn quadrat (value: i32) -> i32 {
-    value*value
-}
-
 
 impl Drawable for Circle {
-    fn draw(&self, set: &mut BTreeSet<Point>) {
+    fn draw(&self, set: &mut Vec<Point>) {
         let radius = self.diameter/2;
 
         let mut x = radius - 1;
@@ -126,35 +133,35 @@ impl Drawable for Circle {
         let y0 = self.position.y;
 
         while x >= y {
-            set.insert(Point {
+            set.push(Point {
                 position: Vector {x: x0 + x, y: y0 + y},
                 value: 0,
             });
-            set.insert(Point {
+            set.push(Point {
                 position: Vector {x: x0 + y, y: y0 + x},
                 value: 0,
             });
-            set.insert(Point {
+            set.push(Point {
                 position: Vector {x: x0 -y, y: y0 + x},
                 value: 0,
             });
-            set.insert(Point {
+            set.push(Point {
                 position: Vector {x: x0 -x, y: y0 + y},
                 value: 0,
             });
-            set.insert(Point {
+            set.push(Point {
                 position: Vector {x: x0 -x, y: y0 - y},
                 value: 0,
             });
-            set.insert(Point {
+            set.push(Point {
                 position: Vector {x: x0 -y, y: y0 - x},
                 value: 0,
             });
-            set.insert(Point {
+            set.push(Point {
                 position: Vector {x: x0 + y, y: y0 - x},
                 value: 0,
             });
-            set.insert(Point {
+            set.push(Point {
                 position: Vector {x: x0 + x, y: y0 - y},
                 value: 0,
             });
@@ -176,7 +183,7 @@ impl Drawable for Circle {
 
 impl Drawable for Rectangle {
 
-    fn draw (&self, set: &mut BTreeSet<Point>) {
+    fn draw (&self, set: &mut Vec<Point>) {
         let y = self.position.y;
         let x = self.position.x;
         let height = self.height / 2;
@@ -188,7 +195,7 @@ impl Drawable for Rectangle {
                 position: Vector {x: x - width, y},
                 value: 0xffffff,
             };
-            set.insert(point);
+            set.push(point);
         }
 
         //Right Edge
@@ -197,7 +204,7 @@ impl Drawable for Rectangle {
                 position: Vector {x: x + width, y},
                 value: 0xffffff,
             };
-            set.insert(point);
+            set.push(point);
         }
 
         //Top Edge
@@ -206,7 +213,7 @@ impl Drawable for Rectangle {
                 position: Vector {x: x, y: y + height},
                 value: 0xffffff,
             };
-            set.insert(point);
+            set.push(point);
         }
 
         //Bottom Edge
@@ -215,7 +222,7 @@ impl Drawable for Rectangle {
                 position: Vector {x: x, y: y - height},
                 value: 0xffffff,
             };
-            set.insert(point);
+            set.push(point);
         }
     }
 }

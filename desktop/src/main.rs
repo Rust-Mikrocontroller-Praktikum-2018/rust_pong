@@ -23,8 +23,9 @@ use controller::DefaultController;
 
 fn main() {
     let frame_buffer = FrameBuffer::new(640, 360);
+    let frame_buffer_2 = FrameBuffer::new(640,360);
     let mut renderer = Renderer::new();
-    let mut display = DefaultDisplay::new("Game", 640, 360, frame_buffer);
+    let mut display = DefaultDisplay::new("Game", 640, 360, frame_buffer, frame_buffer_2);
 
     let mut controller_a = DefaultController::new(display.window.clone(), Key::W, Key::S);
     let mut controller_b = DefaultController::new(display.window.clone(), Key::Up, Key::Down);
