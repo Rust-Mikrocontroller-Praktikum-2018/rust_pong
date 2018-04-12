@@ -8,16 +8,47 @@ use core::cmp::Ordering;
 use stm32f7::{system_clock};
 use stm32f7::lcd::{Color};
 
+const WIDTH: i32 = 480;
+
+pub struct PixelMarker {
+    pub marked_pixels: [usize; 4080],
+}
+
+impl PixelMarker {
+    pub fn new() -> PixelMarker {
+        PixelMarker {
+            marked_pixels: [0; 4080],
+        }
+    }
+
+    pub fn mark_pixel(&mut self, x: i32, y: i32) {
+        let idx = (x + WIDTH * y) as usize;
+        self.marked_pixels[idx / 32] |= 1 << (idx % 32); 
+    }
+
+    pub fn unmark_pixel(&mut self, x: i32, y: i32) {
+        let idx = (x + WIDTH * y) as usize;
+        self.marked_pixels[idx / 32] &= !(1 << (idx % 32)); 
+    }
+
+    pub fn is_pixel_marked(&mut self, x: i32, y: i32) -> bool {
+        let idx = (x + WIDTH * y) as usize;
+        (self.marked_pixels[idx / 32] & (1 << (idx % 32))) > 0
+    }
+}
+
 pub struct Renderer {
     old_points: Vec<Point>,
-    layer: bool,
+    pixel_marker: PixelMarker
+   // layer: bool,
 }
 
 impl Renderer {
     pub fn new() -> Self {
         Renderer {
             old_points: Vec::with_capacity(100),
-            layer: true,
+            pixel_marker: PixelMarker::new(),
+       //     layer: true,
         }
     }
 
@@ -56,6 +87,25 @@ impl Renderer {
 
         //hprintln!("paddles.draw(): {}", system_clock::ticks() - start_draw_paddles);
 
+        for p in &new_points {
+            self.pixel_marker.mark_pixel(p.position.x, p.position.y);
+        }
+
+        for p in &self.old_points {
+            if !self.pixel_marker.is_pixel_marked(p.position.x, p.position.y) {
+                display.set_pixel_1(p.position.x as usize, p.position.y as usize, 0x000000);
+            } else {
+                self.pixel_marker.unmark_pixel(p.position.x, p.position.y);
+            }
+        }
+
+        for p in &new_points {
+            if self.pixel_marker.is_pixel_marked(p.position.x, p.position.y) {
+                display.set_pixel_1(p.position.x as usize, p.position.y as usize, 0xffffff);
+                self.pixel_marker.unmark_pixel(p.position.x, p.position.y);
+            }
+        }
+/*
 
         if self.layer {
             for p_new in new_points.iter() {
@@ -72,10 +122,10 @@ impl Renderer {
                 display.unset_pixel_1(p_old.position.x as usize, p_old.position.y as usize);
             }
         }
-
+*/
 
         self.old_points = new_points;
-        self.layer = !self.layer;
+        //self.layer = !self.layer;
 
         //let start_show_score = system_clock::ticks();
         //hprintln!("display.show_score(): {}", system_clock::ticks() - start_show_score);
