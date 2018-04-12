@@ -9,8 +9,10 @@
 mod player;
 mod display;
 mod renderer;
+mod debug;
 use player::PlayerState;
 use display::DefaultDisplay;
+use debug::SemihostingDebugger;
 
 #[macro_use]
 extern crate stm32f7_discovery as stm32f7;
@@ -24,6 +26,7 @@ extern crate r0;
 // game related structs
 use pong_core::{pong, constants};
 use pong::{Game, GameState};
+use pong_core::debug::Debugger;
 use constants::{LCD_HEIGHT, LCD_WIDTH};
 use renderer::Renderer;
 
@@ -132,7 +135,8 @@ fn main(hw: board::Hardware) -> ! {
     i2c_3.test_1();
     i2c_3.test_2();
 
-    let game = Game::new(LCD_WIDTH, LCD_HEIGHT);
+    let debugger = SemihostingDebugger{};
+    let game = Game{width: LCD_WIDTH, height: LCD_HEIGHT, debugger: &debugger};
     let mut game_state = GameState::new(LCD_WIDTH, LCD_HEIGHT); 
     let mut display = DefaultDisplay::new(lcd);
     let mut renderer = Renderer::new(   );
@@ -143,9 +147,8 @@ fn main(hw: board::Hardware) -> ! {
     let mut t_start = system_clock::ticks();
 
     loop {
+        SemihostingDebugger::println(format_args!("render()"));
         renderer.render(&game_state, &mut display);
-        //hprintln!("Rendering time: {}", system_clock::ticks() - start);
-
         let start = system_clock::ticks();
         let mut input_1 = player_1.y;
         let mut input_2 = player_2.y;
@@ -171,10 +174,7 @@ fn main(hw: board::Hardware) -> ! {
             ((t_delta as f32) / (system_clock::get_frequency() / 1_000_000) as f32) * 10.0
         );
 
-
         player_1.update(&game_state.paddle_1);
         player_2.update(&game_state.paddle_2);
-
-        //hprintln!("Game time: {}", system_clock::ticks() - start);
     }
 }
