@@ -25,10 +25,26 @@ impl<'a> DefaultDisplay<'a> {
 }
 
 impl<'a> Display for DefaultDisplay<'a> {
-    fn set_pixel(&mut self, x: usize, y: usize, hex_color: u32) {
+    fn set_pixel_1(&mut self, x: usize, y: usize, hex_color: u32) {
         let mut layer_1 = self.display.layer_1().unwrap();
         layer_1.print_point_color_at(x, y, Color::from_hex(hex_color));
     }
+
+    fn set_pixel_2(&mut self, x: usize, y: usize, hex_color: u32) {
+        let mut layer = self.display.layer_2().unwrap();
+        layer.print_point_color_at(x, y, Color::from_hex(hex_color));
+    }
+
+    fn unset_pixel_1(&mut self, x: usize, y: usize) {
+        let mut layer = self.display.layer_1().unwrap();
+        layer.print_point_color_at(x, y, Color::from_argb8888(0));
+    }
+
+    fn unset_pixel_2(&mut self, x: usize, y: usize) {
+        let mut layer = self.display.layer_2().unwrap();
+        layer.print_point_color_at(x, y, Color::from_argb8888(0));
+    }
+
 
     fn show_score(&mut self, score_1: usize, score_2: usize, hex_color: u32) {
         let mut layer_1 = self.display.layer_1().unwrap();

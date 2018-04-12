@@ -7,15 +7,18 @@ use alloc::binary_heap::BinaryHeap;
 use core::cmp::Ordering;
 
 use stm32f7::{system_clock};
+use stm32f7::lcd::{Color};
 
 pub struct Renderer {
     old_points: Vec<Point>,
+    layer: bool,
 }
 
 impl Renderer {
     pub fn new() -> Self {
         Renderer {
             old_points: Vec::with_capacity(100),
+            layer: true,
         }
     }
 
@@ -54,16 +57,25 @@ impl Renderer {
         //hprintln!("paddles.draw(): {}", system_clock::ticks() - start_draw_paddles);
 
 
-
-        for p_old in self.old_points.iter() {
-            display.set_pixel(p_old.position.x as usize, p_old.position.y as usize, 0x000000);
+        if self.layer {
+            for p_new in new_points.iter() {
+                display.set_pixel_1(p_new.position.x as usize, p_new.position.y as usize, 0xffffff);
+            }
+            for p_old in self.old_points.iter() {
+                display.unset_pixel_2(p_old.position.x as usize, p_old.position.y as usize);
+            }
+        } else {
+            for p_new in new_points.iter() {
+                display.set_pixel_2(p_new.position.x as usize, p_new.position.y as usize, 0xffffff);
+            }
+            for p_old in self.old_points.iter() {
+                display.unset_pixel_1(p_old.position.x as usize, p_old.position.y as usize);
+            }
         }
 
-        for p_new in new_points.iter() {
-            display.set_pixel(p_new.position.x as usize, p_new.position.y as usize, 0xffffff);
-        }
 
         self.old_points = new_points;
+        self.layer = !self.layer;
 
         //let start_show_score = system_clock::ticks();
         //display.show_score(state.score_1, state.score_2, 0xffffff);

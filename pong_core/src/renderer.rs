@@ -50,11 +50,11 @@ impl Renderer {
         let points_to_draw: Vec<_> = new_points.difference(&self.old_points).cloned().collect();
 
         for p in points_to_remove {
-            display.set_pixel(p.position.x as usize, p.position.y as usize, 0x000000);
+            display.set_pixel_1(p.position.x as usize, p.position.y as usize, 0x000000);
         }
 
         for p in points_to_draw {
-            display.set_pixel(p.position.x as usize, p.position.y as usize, 0xffffff);
+            display.set_pixel_1(p.position.x as usize, p.position.y as usize, 0xffffff);
         }
 
         display.show_score(state.score_1, state.score_2, 0xffffff);
